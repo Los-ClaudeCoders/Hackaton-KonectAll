@@ -99,7 +99,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
       }
 
       <div class="saludo">
-        <p class="eyebrow">Tu barrio, más conectado</p>
+        <p class="eyebrow">Tu localidad, más conectado</p>
         <h1>{{ saludo() }}</h1>
       </div>
 
@@ -161,7 +161,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
 
       <ion-searchbar
         [value]="busqueda()"
-        placeholder="Buscar en tu barrio"
+        placeholder="Buscar en tu localidad"
         (ionInput)="busqueda.set($any($event).detail.value ?? '')"
       ></ion-searchbar>
 
@@ -187,7 +187,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
         @if (!pubs.cargando()) {
           <app-estado-vacio
             icono="search-outline"
-            [titulo]="hayFiltros() ? 'Sin resultados' : 'Tu barrio está tranquilo'"
+            [titulo]="hayFiltros() ? 'Sin resultados' : 'Tu localidad está tranquila'"
             [texto]="
               hayFiltros()
                 ? 'Prueba con otro término o amplía el radio de búsqueda.'

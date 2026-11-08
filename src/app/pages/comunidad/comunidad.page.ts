@@ -56,7 +56,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
       @if (!auth.usuario()) {
         <app-estado-vacio
           icono="people-outline"
-          titulo="Únete a tu barrio"
+          titulo="Únete a tu localidad"
           texto="Crea una cuenta para publicar y recomendar a tus vecinos."
           accionTexto="Iniciar sesión"
           (accion)="iniciarSesion()"

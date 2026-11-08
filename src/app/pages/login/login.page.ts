@@ -88,7 +88,7 @@ import { normalizarTelefono } from '../../shared/telefono.util';
       <div class="marca">
         <div class="logo"><ion-icon name="people-outline"></ion-icon></div>
         <h1>KonectAll</h1>
-        <p>Tu barrio, más conectado</p>
+        <p>Tu localidad, más conectado</p>
       </div>
 
       @if (auth.recuperando()) {
@@ -132,7 +132,7 @@ import { normalizarTelefono } from '../../shared/telefono.util';
           ></ion-input>
           <ion-input
             class="campo"
-            label="Barrio (obligatorio)"
+            label="Localidad (obligatoria)"
             labelPlacement="floating"
             fill="outline"
             [value]="barrio()"
@@ -214,7 +214,7 @@ export class LoginPage {
     }
     const barrio = this.barrio().trim();
     if (this.modo() === 'registrar' && !barrio) {
-      await this.ui.aviso('Ingresa tu barrio', 'danger');
+      await this.ui.aviso('Ingresa tu localidad', 'danger');
       return;
     }
 

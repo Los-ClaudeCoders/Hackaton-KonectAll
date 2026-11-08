@@ -7,6 +7,7 @@ import {
   IonChip,
   IonContent,
   IonHeader,
+  IonIcon,
   IonInput,
   IonLabel,
   IonSegment,
@@ -14,6 +15,8 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { createOutline } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth.service';
 import type { Publicacion } from '../../core/models';
@@ -40,6 +43,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
     IonCardContent,
     IonChip,
     IonButton,
+    IonIcon,
     IonInput,
     IonLabel,
     IonSegment,
@@ -74,9 +78,17 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
       </section>
 
       @if (editandoPerfil()) {
-        <ion-card>
+        <ion-card class="edicion">
           <ion-card-content>
-            <strong>Editar mis datos</strong>
+            <div class="edicion-cabecera">
+              <ion-chip color="primary" outline>
+                <ion-icon name="create-outline"></ion-icon>
+                Editando
+              </ion-chip>
+              <span class="estado" [class.pendiente]="cambiosPendientes()">
+                {{ cambiosPendientes() ? 'Cambios sin guardar' : 'Sin cambios' }}
+              </span>
+            </div>
             <ion-input
               class="campo"
               label="Nombre"
@@ -96,15 +108,20 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
             ></ion-input>
             <ion-input
               class="campo"
-              label="Barrio (obligatorio)"
+              label="Localidad (obligatoria)"
               labelPlacement="floating"
               fill="outline"
               [value]="barrioEdicion()"
               (ionInput)="barrioEdicion.set($any($event).detail.value ?? '')"
             ></ion-input>
 
-            <ion-button class="campo" expand="block" [disabled]="guardando()" (click)="guardarPerfil()">
-              {{ guardando() ? 'Guardando...' : 'Guardar datos' }}
+            <ion-button
+              class="campo"
+              expand="block"
+              [disabled]="guardando() || !cambiosPendientes()"
+              (click)="guardarPerfil()"
+            >
+              {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
             </ion-button>
             <ion-button expand="block" fill="clear" (click)="cancelarEdicion()">Cancelar</ion-button>
           </ion-card-content>
@@ -240,6 +257,30 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
       .tema {
         margin-top: 12px;
       }
+      .edicion {
+        border-color: var(--ion-color-primary);
+        box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.08);
+      }
+      .edicion-cabecera {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .edicion-cabecera ion-chip {
+        font-size: 0.75rem;
+        height: 28px;
+        margin: 0;
+      }
+      .estado {
+        color: var(--app-muted);
+        font-size: 0.75rem;
+      }
+      .estado.pendiente {
+        color: var(--ion-color-primary);
+        font-weight: 600;
+      }
     `,
   ],
 })
@@ -267,6 +308,21 @@ export class PerfilPage {
   );
 
   readonly intercambios = computed(() => this.misPublicaciones().filter((p) => p.tipo === 'intercambio').length);
+
+  readonly cambiosPendientes = computed(() => {
+    const nombre = this.nombreEdicion().trim();
+    const telefono = normalizarTelefono(this.telefonoEdicion());
+    const barrio = this.barrioEdicion().trim();
+    return (
+      nombre !== this.nombre().trim() ||
+      telefono !== normalizarTelefono(this.telefono()) ||
+      barrio !== (this.barrio() ?? '').trim()
+    );
+  });
+
+  constructor() {
+    addIcons({ createOutline });
+  }
 
   async ionViewWillEnter(): Promise<void> {
     try {
@@ -302,6 +358,7 @@ export class PerfilPage {
   }
 
   cancelarEdicion(): void {
+    if (this.cambiosPendientes() && !window.confirm('¿Descartar los cambios?')) return;
     this.editandoPerfil.set(false);
   }
 
@@ -318,7 +375,7 @@ export class PerfilPage {
       return;
     }
     if (!barrio) {
-      await this.ui.aviso('Ingresa tu barrio', 'danger');
+      await this.ui.aviso('Ingresa tu localidad', 'danger');
       return;
     }
     const user = await this.auth.usuarioActual();

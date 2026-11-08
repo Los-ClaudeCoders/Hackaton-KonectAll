@@ -123,7 +123,7 @@ export class PublicacionesService {
         const nueva = payload.new as Publicacion;
         if (nueva.modo !== 'emergencia' || nueva.autor_id === this.auth.usuario()?.id) return;
         if (this.router.url.includes('/emergencia') || this.router.url === '/tabs/inicio') return;
-        void this.ui.aviso('Nueva emergencia en tu barrio', 'danger');
+        void this.ui.aviso('Nueva emergencia en tu localidad', 'danger');
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'recomendaciones' }, recargar)
       .subscribe();

@@ -49,7 +49,7 @@ test('flujo completo entre dos vecinos', async ({ browser }) => {
     await pageA.locator('app-perfil').getByRole('button', { name: 'Editar perfil' }).click();
     const camposPerfil = pageA.locator('app-perfil ion-input input');
     await camposPerfil.nth(2).fill('Paucarpata');
-    await pageA.locator('app-perfil').getByRole('button', { name: 'Guardar datos' }).click();
+    await pageA.locator('app-perfil').getByRole('button', { name: 'Guardar cambios' }).click();
     await expect(pageA.getByText('Perfil actualizado')).toBeVisible();
     await expect(pageA.locator('app-perfil').getByText('Paucarpata')).toBeVisible();
 

@@ -16,7 +16,7 @@ const CLAVE = 'konectall.bienvenida';
       <section class="hero">
         <div class="logo"><ion-icon name="people-outline"></ion-icon></div>
         <h1>KonectAll</h1>
-        <p class="lema">Tu barrio, más conectado</p>
+        <p class="lema">Tu localidad, más conectado</p>
         <p class="texto">Comparte, ayuda y encuentra lo que necesitas cerca de casa.</p>
       </section>
 
