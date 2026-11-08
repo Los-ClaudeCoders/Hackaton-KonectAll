@@ -148,18 +148,22 @@ ion-segment-button {
 ion-tab-bar {
   --background: var(--app-surface);
   border-top: 1px solid var(--app-border);
-  padding-bottom: env(safe-area-inset-bottom);
+  min-height: 58px;
+  padding: 4px 0 env(safe-area-inset-bottom);
 }
 
 ion-tab-button {
   --color: var(--app-muted);
   --color-selected: var(--ion-color-primary);
   font-weight: 500;
+  min-height: 48px;
+  padding: 4px 0;
 }
 
 ion-tab-button ion-label {
-  font-size: 0.68rem;
+  font-size: 0.67rem;
   font-weight: 600;
+  margin-top: 2px;
 }
 
 ion-badge {

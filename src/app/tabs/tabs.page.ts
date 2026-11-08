@@ -50,15 +50,14 @@ import { MensajesService } from '../core/mensajes.service';
         background: var(--ion-color-primary);
         border-radius: 50%;
         box-shadow: 0 6px 14px rgba(28, 95, 214, 0.35);
+        box-sizing: border-box;
         color: var(--ion-color-primary-contrast);
-        font-size: 22px;
+        font-size: 20px;
         height: 44px;
-        margin-top: -14px;
+        margin: -10px 0;
         padding: 10px;
+        transform: translateY(-10px);
         width: 44px;
-      }
-      ion-tab-button.tab-publicar ion-label {
-        margin-top: 2px;
       }
     `,
   ],
