@@ -46,12 +46,22 @@ import { MensajesService } from '../core/mensajes.service';
   `,
   styles: [
     `
+      ion-tab-button.tab-publicar {
+        --padding-start: 0;
+        --padding-end: 0;
+      }
+
       ion-tab-button.tab-publicar ion-icon {
         background: var(--ion-color-primary);
+        border-radius: 999px;
         box-shadow: 0 6px 14px rgba(28, 95, 214, 0.35);
         color: var(--ion-color-primary-contrast);
+        display: block;
         font-size: 22px;
+        height: 52px;
+        margin: 0 auto;
         padding: 9px;
+        width: 52px;
       }
     `,
   ],

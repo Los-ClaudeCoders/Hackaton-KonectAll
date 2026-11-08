@@ -269,5 +269,19 @@ ion-router-outlet {
 }
 
 ion-router-outlet > .ion-page {
+  display: flex;
+  justify-content: center;
   pointer-events: auto;
+  width: 100%;
+}
+
+@media (min-width: 980px) {
+  body {
+    display: flex;
+    justify-content: center;
+  }
+
+  ion-app {
+    width: min(100%, 1200px);
+  }
 }
