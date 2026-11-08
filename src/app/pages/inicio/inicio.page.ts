@@ -6,6 +6,7 @@ import {
   IonButtons,
   IonCard,
   IonCardContent,
+  IonChip,
   IonCol,
   IonContent,
   IonGrid,
@@ -39,8 +40,10 @@ import type { Publicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { TemaService } from '../../core/tema.service';
 import { UiService } from '../../core/ui.service';
+import { DestacadosComponent } from '../../shared/ui/destacados.component';
 import { EsqueletoListadoComponent } from '../../shared/ui/esqueleto-listado.component';
 import { EstadoVacioComponent } from '../../shared/ui/estado-vacio.component';
+import { IlustracionCategoriaComponent } from '../../shared/ui/ilustracion-categoria.component';
 import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.component';
 
 @Component({
@@ -58,6 +61,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
     IonCol,
     IonCard,
     IonCardContent,
+    IonChip,
     IonIcon,
     IonSearchbar,
     IonSegment,
@@ -67,6 +71,8 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
     IonRefresherContent,
     PublicacionCardComponent,
     EstadoVacioComponent,
+    IlustracionCategoriaComponent,
+    DestacadosComponent,
     EsqueletoListadoComponent,
   ],
   template: `
@@ -99,7 +105,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
       }
 
       <div class="saludo">
-        <p class="eyebrow">Tu localidad, más conectado</p>
+        <p class="eyebrow">Tu barrio, más conectado</p>
         <h1>{{ saludo() }}</h1>
       </div>
 
@@ -120,7 +126,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
           <ion-col size="6">
             <ion-card button class="categoria cat-servicio" (click)="ir('/tabs/servicios')">
               <ion-card-content>
-                <div class="categoria-icono"><ion-icon name="construct-outline"></ion-icon></div>
+                <app-ilustracion-categoria class="categoria-ilustracion" nombre="servicios"></app-ilustracion-categoria>
                 <h2>Servicios y Productos</h2>
                 <p>Oficios y cosas cerca de ti</p>
               </ion-card-content>
@@ -130,7 +136,10 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
           <ion-col size="6">
             <ion-card button class="categoria cat-intercambio" (click)="ir('/tabs/intercambios')">
               <ion-card-content>
-                <div class="categoria-icono"><ion-icon name="swap-horizontal-outline"></ion-icon></div>
+                <app-ilustracion-categoria
+                  class="categoria-ilustracion"
+                  nombre="intercambios"
+                ></app-ilustracion-categoria>
                 <h2>Intercambios Solidarios</h2>
                 <p>Sin dinero, con confianza</p>
               </ion-card-content>
@@ -140,7 +149,10 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
           <ion-col size="6">
             <ion-card button class="categoria cat-emergencia" (click)="ir('/tabs/emergencia')">
               <ion-card-content>
-                <div class="categoria-icono"><ion-icon name="alert-circle-outline"></ion-icon></div>
+                <app-ilustracion-categoria
+                  class="categoria-ilustracion"
+                  nombre="emergencias"
+                ></app-ilustracion-categoria>
                 <h2>Emergencias</h2>
                 <p>Pide u ofrece ayuda ya</p>
               </ion-card-content>
@@ -150,7 +162,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
           <ion-col size="6">
             <ion-card button class="categoria cat-comunidad" (click)="ir('/tabs/comunidad')">
               <ion-card-content>
-                <div class="categoria-icono"><ion-icon name="people-outline"></ion-icon></div>
+                <app-ilustracion-categoria class="categoria-ilustracion" nombre="comunidad"></app-ilustracion-categoria>
                 <h2>Mi Comunidad</h2>
                 <p>Vecinos y recomendaciones</p>
               </ion-card-content>
@@ -161,7 +173,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
 
       <ion-searchbar
         [value]="busqueda()"
-        placeholder="Buscar en tu localidad"
+        placeholder="Buscar en tu barrio"
         (ionInput)="busqueda.set($any($event).detail.value ?? '')"
       ></ion-searchbar>
 
@@ -172,9 +184,30 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
         <ion-segment-button value="5"><ion-label>5 km</ion-label></ion-segment-button>
       </ion-segment>
 
+      @if (destacados().length > 0 && !hayFiltros()) {
+        <div class="fila-titulo">
+          <h2 class="titulo-seccion">Destacados</h2>
+          <span class="contador">Lo más recomendado</span>
+        </div>
+        <app-destacados [publicaciones]="destacados()" (abrir)="ver($event)"></app-destacados>
+      }
+
       <div class="fila-titulo">
         <h2 class="titulo-seccion">Cerca de ti</h2>
         <span class="contador">{{ resultados().length }} publicaciones</span>
+      </div>
+
+      <div class="chips-categoria" role="group" aria-label="Filtrar por categoría">
+        @for (c of categorias; track c.valor) {
+          <ion-chip
+            class="chip-categoria"
+            [class.activa]="categoria() === c.valor"
+            [attr.aria-pressed]="categoria() === c.valor"
+            (click)="categoria.set(c.valor)"
+          >
+            {{ c.etiqueta }}
+          </ion-chip>
+        }
       </div>
 
       @if (pubs.cargando() && pubs.publicaciones().length === 0) {
@@ -187,7 +220,7 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
         @if (!pubs.cargando()) {
           <app-estado-vacio
             icono="search-outline"
-            [titulo]="hayFiltros() ? 'Sin resultados' : 'Tu localidad está tranquila'"
+            [titulo]="hayFiltros() ? 'Sin resultados' : 'Tu barrio está tranquilo'"
             [texto]="
               hayFiltros()
                 ? 'Prueba con otro término o amplía el radio de búsqueda.'
@@ -277,20 +310,8 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
         --cat: var(--cat-comunidad);
         --cat-suave: var(--cat-comunidad-soft);
       }
-      .categoria-icono {
-        align-items: center;
-        background: var(--app-surface);
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
-        display: flex;
-        height: 40px;
-        justify-content: center;
-        margin-bottom: 8px;
-        width: 40px;
-      }
-      .categoria-icono ion-icon {
-        color: var(--cat);
-        font-size: 22px;
+      .categoria-ilustracion {
+        margin: -2px 0 8px;
       }
       .categoria h2 {
         font-size: 0.92rem;
@@ -314,6 +335,23 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
         font-size: 1.1rem;
         font-weight: 700;
         margin: 0;
+      }
+      .chips-categoria {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        margin: 0 -4px 4px;
+      }
+      .chip-categoria {
+        --background: var(--app-surface);
+        --color: var(--app-text);
+        border: 1px solid var(--app-border);
+        cursor: pointer;
+      }
+      .chip-categoria.activa {
+        --background: var(--ion-color-primary);
+        --color: #fff;
+        border-color: var(--ion-color-primary);
       }
       .contador {
         color: var(--app-muted);
@@ -344,20 +382,40 @@ export class InicioPage {
   readonly enLinea = signal(navigator.onLine);
   readonly busqueda = signal('');
   readonly radio = signal(0);
+  readonly categoria = signal('todas');
+
+  readonly categorias = [
+    { valor: 'todas', etiqueta: 'Todas' },
+    { valor: 'servicio', etiqueta: 'Servicios' },
+    { valor: 'producto', etiqueta: 'Productos' },
+    { valor: 'otros', etiqueta: 'Otros' },
+  ];
 
   readonly saludo = computed(() => {
     const nombre = (this.auth.usuario()?.user_metadata?.['nombre'] as string | undefined) ?? 'vecino';
     return `Hola, ${nombre.split(/\s+/)[0]}`;
   });
 
-  readonly hayFiltros = computed(() => this.busqueda().trim().length > 0 || this.radio() > 0);
+  readonly hayFiltros = computed(
+    () => this.busqueda().trim().length > 0 || this.radio() > 0 || this.categoria() !== 'todas',
+  );
+
+  readonly destacados = computed(() =>
+    this.pubs
+      .cercanas()
+      .filter((p) => !!p.foto_url && p.estado === 'disponible')
+      .sort((a, b) => (b.recomendaciones?.[0]?.count ?? 0) - (a.recomendaciones?.[0]?.count ?? 0))
+      .slice(0, 8),
+  );
 
   readonly emergencias = computed(() => this.pubs.cercanas().filter((p) => p.modo === 'emergencia'));
 
   readonly resultados = computed(() => {
     const texto = this.busqueda().trim().toLowerCase();
     const limite = this.radio();
+    const cat = this.categoria();
     return this.pubs.cercanas().filter((p) => {
+      if (cat !== 'todas' && p.categoria !== cat) return false;
       if (limite > 0 && (p.distanciaKm ?? Infinity) > limite) return false;
       if (!texto) return true;
       const contenido =
@@ -414,6 +472,7 @@ export class InicioPage {
   limpiarFiltros(): void {
     this.busqueda.set('');
     this.radio.set(0);
+    this.categoria.set('todas');
   }
 
   async refrescar(evento: RefresherCustomEvent): Promise<void> {
