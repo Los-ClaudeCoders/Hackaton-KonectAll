@@ -3,12 +3,6 @@ import { Router } from '@angular/router';
 import {
   IonBackButton,
   IonButtons,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonChip,
   IonContent,
   IonHeader,
   IonLabel,
@@ -17,7 +11,6 @@ import {
   IonSearchbar,
   IonSegment,
   IonSegmentButton,
-  IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -26,7 +19,9 @@ import type { RefresherCustomEvent } from '@ionic/angular';
 import type { Publicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { UiService } from '../../core/ui.service';
-import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util';
+import { EsqueletoListadoComponent } from '../../shared/ui/esqueleto-listado.component';
+import { EstadoVacioComponent } from '../../shared/ui/estado-vacio.component';
+import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.component';
 
 @Component({
   selector: 'app-servicios',
@@ -41,16 +36,12 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
     IonSegment,
     IonSegmentButton,
     IonLabel,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonCardContent,
-    IonChip,
-    IonSpinner,
     IonSearchbar,
     IonRefresher,
     IonRefresherContent,
+    PublicacionCardComponent,
+    EstadoVacioComponent,
+    EsqueletoListadoComponent,
   ],
   template: `
     <ion-header>
@@ -80,28 +71,20 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
       </ion-segment>
 
       @if (pubs.cargando() && lista().length === 0) {
-        <div class="centrado"><ion-spinner></ion-spinner></div>
+        <app-esqueleto-listado [filas]="3"></app-esqueleto-listado>
       }
 
       @for (p of lista(); track p.id) {
-        <ion-card button (click)="ver(p)">
-          <ion-card-header>
-            <ion-card-subtitle>
-              {{ p.perfiles?.nombre ?? 'Vecino' }} · {{ p.distanciaKm?.toFixed(1) ?? '?' }} km
-            </ion-card-subtitle>
-            <ion-card-title>{{ p.titulo }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-chip [color]="colorTipo(p.tipo)" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
-            <ion-chip color="medium" outline>{{ textoPrecio(p.precio) }}</ion-chip>
-            @if (p.urgente) {
-              <ion-chip color="danger" outline>Urgente</ion-chip>
-            }
-          </ion-card-content>
-        </ion-card>
+        <app-publicacion-card [publicacion]="p" [style.--i]="$index" (abrir)="ver($event)"></app-publicacion-card>
       } @empty {
         @if (!pubs.cargando()) {
-          <p class="vacio">No hay servicios ni productos en este filtro.</p>
+          <app-estado-vacio
+            icono="search-outline"
+            titulo="Sin resultados"
+            texto="No hay servicios ni productos con ese filtro."
+            accionTexto="Ver todo"
+            (accion)="limpiar()"
+          ></app-estado-vacio>
         }
       }
     </ion-content>
@@ -109,16 +92,7 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
   styles: [
     `
       .segmento {
-        padding: 8px;
-      }
-      .centrado {
-        text-align: center;
-        padding: 24px;
-      }
-      .vacio {
-        text-align: center;
-        color: var(--ion-color-medium);
-        padding: 24px;
+        padding: 0 8px 8px;
       }
     `,
   ],
@@ -127,10 +101,6 @@ export class ServiciosPage {
   readonly pubs = inject(PublicacionesService);
   private ui = inject(UiService);
   private router = inject(Router);
-
-  readonly colorTipo = colorTipo;
-  readonly etiquetaTipo = etiquetaTipo;
-  readonly textoPrecio = textoPrecio;
 
   readonly filtro = signal<'todos' | 'servicio' | 'producto'>('todos');
   readonly busqueda = signal('');
@@ -154,6 +124,11 @@ export class ServiciosPage {
     } catch {
       await this.ui.aviso('No se pudieron cargar los servicios', 'danger');
     }
+  }
+
+  limpiar(): void {
+    this.busqueda.set('');
+    this.filtro.set('todos');
   }
 
   async refrescar(evento: RefresherCustomEvent): Promise<void> {

@@ -1,12 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  IonButton,
-  IonCard,
-  IonCardContent,
-  IonCol,
   IonContent,
-  IonGrid,
   IonHeader,
   IonItem,
   IonLabel,
@@ -14,7 +9,6 @@ import {
   IonNote,
   IonRefresher,
   IonRefresherContent,
-  IonRow,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -25,6 +19,9 @@ import type { Publicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { UiService } from '../../core/ui.service';
 import { resumirVecinos, totalRecomendaciones } from '../../shared/comunidad.util';
+import { AvatarComponent } from '../../shared/ui/avatar.component';
+import { EstadoVacioComponent } from '../../shared/ui/estado-vacio.component';
+import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.component';
 
 @Component({
   selector: 'app-comunidad',
@@ -34,18 +31,15 @@ import { resumirVecinos, totalRecomendaciones } from '../../shared/comunidad.uti
     IonToolbar,
     IonTitle,
     IonContent,
-    IonGrid,
-    IonRow,
-    IonCol,
     IonList,
     IonItem,
     IonLabel,
     IonNote,
-    IonCard,
-    IonCardContent,
-    IonButton,
     IonRefresher,
     IonRefresherContent,
+    AvatarComponent,
+    PublicacionCardComponent,
+    EstadoVacioComponent,
   ],
   template: `
     <ion-header>
@@ -59,59 +53,46 @@ import { resumirVecinos, totalRecomendaciones } from '../../shared/comunidad.uti
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <ion-grid class="resumen">
-        <ion-row>
-          <ion-col>
-            <ion-card>
-              <ion-card-content>
-                <strong>{{ vecinos().length }}</strong>
-                <span>vecinos</span>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-          <ion-col>
-            <ion-card>
-              <ion-card-content>
-                <strong>{{ activas() }}</strong>
-                <span>activas</span>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-          <ion-col>
-            <ion-card>
-              <ion-card-content>
-                <strong>{{ recomendaciones() }}</strong>
-                <span>vistos buenos</span>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-
       @if (!auth.usuario()) {
-        <ion-card>
-          <ion-card-content>
-            <strong>Únete a tu barrio</strong>
-            <p>Crea una cuenta para publicar y recomendar a tus vecinos.</p>
-            <ion-button expand="block" fill="outline" (click)="iniciarSesion()">Iniciar sesión</ion-button>
-          </ion-card-content>
-        </ion-card>
+        <app-estado-vacio
+          icono="people-outline"
+          titulo="Únete a tu barrio"
+          texto="Crea una cuenta para publicar y recomendar a tus vecinos."
+          accionTexto="Iniciar sesión"
+          (accion)="iniciarSesion()"
+        ></app-estado-vacio>
       } @else if (barrio()) {
-        <p class="dato">Tu barrio: {{ barrio() }}</p>
+        <p class="barrio">Estás en {{ barrio() }}</p>
       }
 
-      <h2>Vecinos activos</h2>
-      <ion-list lines="full">
+      <div class="stats">
+        <div class="stat">
+          <strong>{{ vecinos().length }}</strong>
+          <span>Vecinos</span>
+        </div>
+        <div class="stat">
+          <strong>{{ activas() }}</strong>
+          <span>Activas</span>
+        </div>
+        <div class="stat">
+          <strong>{{ recomendaciones() }}</strong>
+          <span>Vistos buenos</span>
+        </div>
+      </div>
+
+      <h2 class="seccion">Vecinos activos</h2>
+      <ion-list class="lista">
         @for (v of vecinos(); track v.autor_id) {
-          <ion-item>
+          <ion-item lines="none" class="vecino">
+            <app-avatar slot="start" [nombre]="v.nombre" tamano="sm"></app-avatar>
             <ion-label>
               <h3>{{ v.nombre }}</h3>
               <p>{{ v.barrio ?? 'Arequipa' }}</p>
             </ion-label>
-            <ion-note slot="end">{{ v.publicaciones }} publicación(es)</ion-note>
+            <ion-note slot="end">{{ v.publicaciones }}</ion-note>
           </ion-item>
         } @empty {
-          <ion-item>
+          <ion-item lines="none">
             <ion-label>
               <p>La comunidad está despertando. Sé el primero en publicar algo.</p>
             </ion-label>
@@ -119,18 +100,14 @@ import { resumirVecinos, totalRecomendaciones } from '../../shared/comunidad.uti
         }
       </ion-list>
 
-      <h2>Más recomendados</h2>
+      <h2 class="seccion">Más recomendados</h2>
       @for (p of recomendados(); track p.id) {
-        <ion-card button (click)="ver(p)">
-          <ion-card-content>
-            <h3>{{ p.titulo }}</h3>
-            <p class="dato">{{ p.perfiles?.nombre ?? 'Vecino' }} · {{ p.perfiles?.barrio ?? 'Arequipa' }}</p>
-            <ion-note color="success">
-              {{ p.recomendaciones?.[0]?.count ?? 0 }}
-              {{ (p.recomendaciones?.[0]?.count ?? 0) === 1 ? 'recomendación' : 'recomendaciones' }}
-            </ion-note>
-          </ion-card-content>
-        </ion-card>
+        <app-publicacion-card [publicacion]="p" [style.--i]="$index" (abrir)="ver($event)">
+          <p class="reco">
+            {{ p.recomendaciones?.[0]?.count ?? 0 }}
+            {{ (p.recomendaciones?.[0]?.count ?? 0) === 1 ? 'recomendación' : 'recomendaciones' }}
+          </p>
+        </app-publicacion-card>
       } @empty {
         <p class="dato">Todavía no hay publicaciones recomendadas.</p>
       }
@@ -138,23 +115,64 @@ import { resumirVecinos, totalRecomendaciones } from '../../shared/comunidad.uti
   `,
   styles: [
     `
-      h2 {
-        margin-top: 20px;
+      .barrio {
+        color: var(--app-muted);
+        font-size: 0.82rem;
+        margin: 0 0 8px;
       }
-      .resumen ion-card {
-        margin: 0;
+      .stats {
+        background: var(--app-surface);
+        border: 1px solid var(--app-border);
+        border-radius: var(--app-radius);
+        box-shadow: var(--app-shadow);
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin: 16px 0;
+        padding: 14px 8px;
         text-align: center;
       }
-      .resumen strong {
+      .stat strong {
+        color: var(--app-text);
         display: block;
-        font-size: 1.5rem;
+        font-size: 1.35rem;
+        font-weight: 700;
       }
-      .resumen span {
-        color: var(--ion-color-medium);
-        font-size: 0.8rem;
+      .stat span {
+        color: var(--app-muted);
+        font-size: 0.7rem;
+      }
+      .seccion {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 18px 0 8px;
+      }
+      .lista {
+        background: var(--app-surface);
+        border: 1px solid var(--app-border);
+        border-radius: var(--app-radius);
+        box-shadow: var(--app-shadow);
+        margin: 0;
+        padding: 4px 0;
+      }
+      .vecino h3 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0;
+      }
+      .vecino p {
+        color: var(--app-muted);
+        font-size: 0.75rem;
+        margin: 2px 0 0;
+      }
+      .reco {
+        color: var(--ion-color-success);
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin: 6px 0 0;
       }
       .dato {
-        color: var(--ion-color-medium);
+        color: var(--app-muted);
+        font-size: 0.85rem;
       }
     `,
   ],
@@ -186,10 +204,6 @@ export class ComunidadPage {
     }
   }
 
-  barrio(): string | null {
-    return (this.auth.usuario()?.user_metadata?.['barrio'] as string | undefined) ?? null;
-  }
-
   async refrescar(evento: RefresherCustomEvent): Promise<void> {
     try {
       await this.pubs.cargar();
@@ -200,8 +214,12 @@ export class ComunidadPage {
     }
   }
 
+  barrio(): string | null {
+    return (this.auth.usuario()?.user_metadata?.['barrio'] as string | undefined) ?? null;
+  }
+
   iniciarSesion(): void {
-    void this.router.navigateByUrl('/login');
+    void this.router.navigate(['/login'], { queryParams: { redirect: '/tabs/comunidad' } });
   }
 
   ver(p: Publicacion): void {

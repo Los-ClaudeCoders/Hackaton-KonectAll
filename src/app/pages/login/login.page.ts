@@ -5,6 +5,7 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonInput,
   IonLabel,
   IonSegment,
@@ -12,6 +13,8 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { peopleOutline } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth.service';
 import { UiService } from '../../core/ui.service';
@@ -28,12 +31,49 @@ import { normalizarTelefono } from '../../shared/telefono.util';
     IonContent,
     IonButtons,
     IonButton,
+    IonIcon,
     IonInput,
     IonSegment,
     IonSegmentButton,
     IonLabel,
   ],
-  styles: ['.campo { margin-top: 16px; } .dato { color: var(--ion-color-medium); }'],
+  styles: [
+    `
+      .marca {
+        margin: 8px 0 18px;
+        text-align: center;
+      }
+      .logo {
+        align-items: center;
+        background: rgba(var(--ion-color-primary-rgb), 0.12);
+        border-radius: 20px;
+        color: var(--ion-color-primary);
+        display: inline-flex;
+        font-size: 34px;
+        height: 64px;
+        justify-content: center;
+        margin-bottom: 8px;
+        width: 64px;
+      }
+      .marca h1 {
+        font-size: 1.7rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+      .marca p {
+        color: var(--app-muted);
+        font-size: 0.82rem;
+        margin: 4px 0 0;
+      }
+      .campo {
+        margin-top: 16px;
+      }
+      .dato {
+        color: var(--app-muted);
+      }
+    `,
+  ],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -45,6 +85,12 @@ import { normalizarTelefono } from '../../shared/telefono.util';
     </ion-header>
 
     <ion-content class="ion-padding">
+      <div class="marca">
+        <div class="logo"><ion-icon name="people-outline"></ion-icon></div>
+        <h1>KonectAll</h1>
+        <p>Tu barrio, más conectado</p>
+      </div>
+
       @if (auth.recuperando()) {
         <h2>Nueva contraseña</h2>
         <p class="dato">Elige una contraseña nueva para tu cuenta.</p>
@@ -144,6 +190,10 @@ export class LoginPage {
   password = signal('');
   nuevaPassword = signal('');
   cargando = signal(false);
+
+  constructor() {
+    addIcons({ peopleOutline });
+  }
 
   async enviar(): Promise<void> {
     const email = this.email().trim();

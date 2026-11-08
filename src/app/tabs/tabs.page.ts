@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { IonBadge, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircle, chatbubblesOutline, homeOutline, mapOutline, personOutline } from 'ionicons/icons';
+import { add, chatbubblesOutline, homeOutline, mapOutline, personOutline } from 'ionicons/icons';
 
 import { MensajesService } from '../core/mensajes.service';
 
@@ -24,8 +24,8 @@ import { MensajesService } from '../core/mensajes.service';
           <ion-label>Mapa</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="publicar" href="/tabs/publicar">
-          <ion-icon name="add-circle"></ion-icon>
+        <ion-tab-button tab="publicar" class="tab-publicar" href="/tabs/publicar">
+          <ion-icon name="add"></ion-icon>
           <ion-label>Publicar</ion-label>
         </ion-tab-button>
 
@@ -44,11 +44,29 @@ import { MensajesService } from '../core/mensajes.service';
       </ion-tab-bar>
     </ion-tabs>
   `,
+  styles: [
+    `
+      ion-tab-button.tab-publicar ion-icon {
+        background: var(--ion-color-primary);
+        border-radius: 50%;
+        box-shadow: 0 6px 14px rgba(28, 95, 214, 0.35);
+        color: var(--ion-color-primary-contrast);
+        font-size: 22px;
+        height: 44px;
+        margin-top: -14px;
+        padding: 10px;
+        width: 44px;
+      }
+      ion-tab-button.tab-publicar ion-label {
+        margin-top: 2px;
+      }
+    `,
+  ],
 })
 export class TabsPage {
   readonly mensajes = inject(MensajesService);
 
   constructor() {
-    addIcons({ homeOutline, mapOutline, addCircle, chatbubblesOutline, personOutline });
+    addIcons({ homeOutline, mapOutline, add, chatbubblesOutline, personOutline });
   }
 }

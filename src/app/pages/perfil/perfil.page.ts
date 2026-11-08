@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonButton,
@@ -18,14 +18,29 @@ import { NotificacionesService } from '../../core/notificaciones.service';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { SupabaseService } from '../../core/supabase.service';
 import { UiService } from '../../core/ui.service';
-import { etiquetaEstado, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util';
 import { mensajeError } from '../../shared/errores.util';
 import { normalizarTelefono } from '../../shared/telefono.util';
+import { AvatarComponent } from '../../shared/ui/avatar.component';
+import { EstadoVacioComponent } from '../../shared/ui/estado-vacio.component';
+import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.component';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent, IonChip, IonButton, IonInput],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardContent,
+    IonChip,
+    IonButton,
+    IonInput,
+    AvatarComponent,
+    PublicacionCardComponent,
+    EstadoVacioComponent,
+  ],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -34,62 +49,80 @@ import { normalizarTelefono } from '../../shared/telefono.util';
     </ion-header>
 
     <ion-content class="ion-padding">
-      <h1>{{ nombre() }}</h1>
-      <p class="dato">{{ auth.usuario()?.email }}</p>
-
-      @if (!editandoPerfil()) {
-        @if (barrio()) {
-          <p class="dato">Barrio: {{ barrio() }}</p>
+      <section class="perfil">
+        <app-avatar [nombre]="nombre()" tamano="xl"></app-avatar>
+        <h1>{{ nombre() }}</h1>
+        <p class="dato">{{ auth.usuario()?.email }}</p>
+        <div class="chips">
+          @if (barrio()) {
+            <ion-chip color="primary" outline>{{ barrio() }}</ion-chip>
+          }
+          @if (telefono()) {
+            <ion-chip color="medium" outline>{{ telefono() }}</ion-chip>
+          }
+        </div>
+        @if (!editandoPerfil()) {
+          <ion-button fill="outline" (click)="iniciarEdicion()">Editar perfil</ion-button>
         }
-        @if (telefono()) {
-          <p class="dato">WhatsApp: {{ telefono() }}</p>
-        }
-        <ion-button expand="block" fill="outline" (click)="iniciarEdicion()">Editar perfil</ion-button>
-      } @else {
-        <ion-input
-          class="campo"
-          label="Nombre"
-          labelPlacement="floating"
-          fill="outline"
-          [value]="nombreEdicion()"
-          (ionInput)="nombreEdicion.set($any($event).detail.value ?? '')"
-        ></ion-input>
-        <ion-input
-          class="campo"
-          label="WhatsApp (ej: 51912345678)"
-          labelPlacement="floating"
-          fill="outline"
-          type="tel"
-          [value]="telefonoEdicion()"
-          (ionInput)="telefonoEdicion.set($any($event).detail.value ?? '')"
-        ></ion-input>
-        <ion-input
-          class="campo"
-          label="Barrio (obligatorio)"
-          labelPlacement="floating"
-          fill="outline"
-          [value]="barrioEdicion()"
-          (ionInput)="barrioEdicion.set($any($event).detail.value ?? '')"
-        ></ion-input>
+      </section>
 
-        <ion-button expand="block" [disabled]="guardando()" (click)="guardarPerfil()">
-          {{ guardando() ? 'Guardando...' : 'Guardar datos' }}
-        </ion-button>
-        <ion-button expand="block" fill="clear" (click)="cancelarEdicion()">Cancelar</ion-button>
+      @if (editandoPerfil()) {
+        <ion-card>
+          <ion-card-content>
+            <strong>Editar mis datos</strong>
+            <ion-input
+              class="campo"
+              label="Nombre"
+              labelPlacement="floating"
+              fill="outline"
+              [value]="nombreEdicion()"
+              (ionInput)="nombreEdicion.set($any($event).detail.value ?? '')"
+            ></ion-input>
+            <ion-input
+              class="campo"
+              label="WhatsApp (ej: 51912345678)"
+              labelPlacement="floating"
+              fill="outline"
+              type="tel"
+              [value]="telefonoEdicion()"
+              (ionInput)="telefonoEdicion.set($any($event).detail.value ?? '')"
+            ></ion-input>
+            <ion-input
+              class="campo"
+              label="Barrio (obligatorio)"
+              labelPlacement="floating"
+              fill="outline"
+              [value]="barrioEdicion()"
+              (ionInput)="barrioEdicion.set($any($event).detail.value ?? '')"
+            ></ion-input>
+
+            <ion-button class="campo" expand="block" [disabled]="guardando()" (click)="guardarPerfil()">
+              {{ guardando() ? 'Guardando...' : 'Guardar datos' }}
+            </ion-button>
+            <ion-button expand="block" fill="clear" (click)="cancelarEdicion()">Cancelar</ion-button>
+          </ion-card-content>
+        </ion-card>
       }
 
-      <ion-card>
-        <ion-card-content>
-          <strong>Mi actividad</strong>
-          <p>{{ misPublicaciones().length }} publicación(es)</p>
-          <p>{{ recomendacionesRecibidas() }} recomendación(es) recibida(s)</p>
-        </ion-card-content>
-      </ion-card>
+      <div class="stats">
+        <div class="stat">
+          <strong>{{ misPublicaciones().length }}</strong>
+          <span>Publicaciones</span>
+        </div>
+        <div class="stat">
+          <strong>{{ recomendacionesRecibidas() }}</strong>
+          <span>Recomendaciones</span>
+        </div>
+        <div class="stat">
+          <strong>{{ intercambios() }}</strong>
+          <span>Intercambios</span>
+        </div>
+      </div>
 
       <ion-card>
         <ion-card-content>
           <strong>Notificaciones</strong>
-          <p>Recibe avisos de mensajes y emergencias.</p>
+          <p class="dato">Recibe avisos de mensajes y emergencias.</p>
           @if (notificaciones.disponible) {
             <ion-button expand="block" fill="outline" (click)="activarNotificaciones()">
               {{ notificaciones.activas() ? 'Notificaciones activas' : 'Activar notificaciones' }}
@@ -100,46 +133,91 @@ import { normalizarTelefono } from '../../shared/telefono.util';
         </ion-card-content>
       </ion-card>
 
+      <h2 class="seccion">Mis publicaciones</h2>
+
       @for (p of misPublicaciones(); track p.id) {
-        <ion-card>
-          <ion-card-content>
-            <ion-chip color="primary" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
-            <ion-chip color="medium" outline>{{ textoPrecio(p.precio) }}</ion-chip>
-            <h2>{{ p.titulo }}</h2>
-            <p class="dato">{{ etiquetaEstado(p.estado) }}</p>
-            <div class="acciones">
-              <ion-button size="small" fill="outline" (click)="editarPublicacion(p)">Editar</ion-button>
-              <ion-button size="small" fill="outline" color="danger" (click)="eliminarPublicacion(p)">
-                Eliminar
-              </ion-button>
-            </div>
-          </ion-card-content>
-        </ion-card>
+        <app-publicacion-card [publicacion]="p" [interactiva]="false" [style.--i]="$index">
+          <div class="acciones">
+            <ion-button size="small" fill="outline" (click)="editarPublicacion(p)">Editar</ion-button>
+            <ion-button size="small" fill="outline" color="danger" (click)="eliminarPublicacion(p)">
+              Eliminar
+            </ion-button>
+          </div>
+        </app-publicacion-card>
       } @empty {
-        <p>Todavía no has publicado nada.</p>
+        <app-estado-vacio
+          icono="file-tray-outline"
+          titulo="Aún no publicaste"
+          texto="Publica algo para tus vecinos y aparecerá aquí."
+          accionTexto="Publicar algo"
+          (accion)="irAPublicar()"
+        ></app-estado-vacio>
       }
 
-      <ion-button expand="block" fill="clear" (click)="tutorial()">Ver tutorial</ion-button>
+      <ion-button class="seccion" expand="block" fill="clear" (click)="tutorial()">Ver tutorial</ion-button>
       <ion-button expand="block" fill="outline" color="danger" (click)="salir()"> Cerrar sesión </ion-button>
     </ion-content>
   `,
   styles: [
     `
+      .perfil {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        padding: 8px 0 4px;
+        text-align: center;
+      }
       h1 {
-        margin-bottom: 4px;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 10px 0 0;
       }
       .dato {
-        color: var(--ion-color-medium);
+        color: var(--app-muted);
+        font-size: 0.82rem;
         margin: 2px 0;
       }
-      .campo {
-        margin-top: 12px;
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+        margin: 8px 0 12px;
+      }
+      .stats {
+        background: var(--app-surface);
+        border: 1px solid var(--app-border);
+        border-radius: var(--app-radius);
+        box-shadow: var(--app-shadow);
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin: 16px 0;
+        padding: 14px 8px;
+        text-align: center;
+      }
+      .stat strong {
+        color: var(--app-text);
+        display: block;
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+      .stat span {
+        color: var(--app-muted);
+        font-size: 0.7rem;
+      }
+      .seccion {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 18px 0 8px;
       }
       .acciones {
         display: flex;
-        gap: 8px;
         flex-wrap: wrap;
-        margin-top: 8px;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .campo {
+        margin-top: 12px;
       }
     `,
   ],
@@ -158,10 +236,6 @@ export class PerfilPage {
   readonly telefonoEdicion = signal('');
   readonly barrioEdicion = signal('');
 
-  readonly etiquetaTipo = etiquetaTipo;
-  readonly etiquetaEstado = etiquetaEstado;
-  readonly textoPrecio = textoPrecio;
-
   readonly misPublicaciones = computed(() =>
     this.pubs.publicaciones().filter((p) => p.autor_id === this.auth.usuario()?.id),
   );
@@ -169,6 +243,8 @@ export class PerfilPage {
   readonly recomendacionesRecibidas = computed(() =>
     this.misPublicaciones().reduce((total, p) => total + (p.recomendaciones?.[0]?.count ?? 0), 0),
   );
+
+  readonly intercambios = computed(() => this.misPublicaciones().filter((p) => p.tipo === 'intercambio').length);
 
   async ionViewWillEnter(): Promise<void> {
     try {
@@ -263,6 +339,10 @@ export class PerfilPage {
 
   async activarNotificaciones(): Promise<void> {
     await this.notificaciones.activar();
+  }
+
+  irAPublicar(): void {
+    void this.router.navigateByUrl('/tabs/publicar');
   }
 
   tutorial(): void {

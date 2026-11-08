@@ -19,7 +19,7 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { handLeftOutline, searchOutline, swapHorizontalOutline } from 'ionicons/icons';
+import { cameraOutline, handLeftOutline, searchOutline, swapHorizontalOutline } from 'ionicons/icons';
 
 import type { ModoPublicacion, NuevaPublicacion, TipoPublicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
@@ -61,30 +61,49 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
     </ion-header>
 
     <ion-content class="ion-padding">
+      @if (!editando()) {
+        <div class="pasos">
+          <div class="paso" [class.activo]="!tipo()" [class.completo]="tipo()">
+            <span>1</span>
+            <em>Tipo</em>
+          </div>
+          <i class="linea" [class.completo]="tipo()"></i>
+          <div class="paso" [class.activo]="tipo()"><span>2</span><em>Detalles</em></div>
+          <i class="linea"></i>
+          <div class="paso"><span>3</span><em>Publicar</em></div>
+        </div>
+      }
+
       @if (!tipo()) {
-        <h2>¿Qué quieres publicar?</h2>
+        <h2 class="titulo-paso">¿Qué deseas hacer?</h2>
 
-        <ion-card button (click)="elegirTipo('ofrezco')">
+        <ion-card button class="tipo tipo-ofrezco" (click)="elegirTipo('ofrezco')">
           <ion-card-content>
-            <ion-icon name="hand-left-outline" size="large" color="success"></ion-icon>
-            <h3>Ofrezco</h3>
-            <p>Un producto, servicio u oficio que puedo dar.</p>
+            <div class="tipo-icono"><ion-icon name="hand-left-outline"></ion-icon></div>
+            <div class="tipo-texto">
+              <h3>Ofrezco</h3>
+              <p>Un producto, servicio u oficio que puedo dar.</p>
+            </div>
           </ion-card-content>
         </ion-card>
 
-        <ion-card button (click)="elegirTipo('necesito')">
+        <ion-card button class="tipo tipo-necesito" (click)="elegirTipo('necesito')">
           <ion-card-content>
-            <ion-icon name="search-outline" size="large" color="warning"></ion-icon>
-            <h3>Necesito</h3>
-            <p>Algo que busco o una ayuda que requiero.</p>
+            <div class="tipo-icono"><ion-icon name="search-outline"></ion-icon></div>
+            <div class="tipo-texto">
+              <h3>Necesito</h3>
+              <p>Algo que busco o una ayuda que requiero.</p>
+            </div>
           </ion-card-content>
         </ion-card>
 
-        <ion-card button (click)="elegirTipo('intercambio')">
+        <ion-card button class="tipo tipo-intercambio" (click)="elegirTipo('intercambio')">
           <ion-card-content>
-            <ion-icon name="swap-horizontal-outline" size="large" color="tertiary"></ion-icon>
-            <h3>Intercambio</h3>
-            <p>Cambio algo sin dinero: objetos, conocimientos o habilidades.</p>
+            <div class="tipo-icono"><ion-icon name="swap-horizontal-outline"></ion-icon></div>
+            <div class="tipo-texto">
+              <h3>Intercambio</h3>
+              <p>Cambio algo sin dinero: objetos, conocimientos o habilidades.</p>
+            </div>
           </ion-card-content>
         </ion-card>
       } @else {
@@ -93,10 +112,6 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
             <ion-card-content> Modo emergencia: tu publicación aparecerá en la lista de urgentes. </ion-card-content>
           </ion-card>
         }
-
-        <p class="paso">
-          {{ editando() ? 'Edita los datos de tu publicación' : 'Paso 2 de 3 · completa los datos' }}
-        </p>
 
         <ion-segment [value]="categoria()" (ionChange)="categoria.set($any($event).detail.value)">
           <ion-segment-button value="servicio">
@@ -113,7 +128,7 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
         <ion-input
           class="campo"
           label="Título"
-          labelPlacement="floating"
+          labelPlacement="stacked"
           fill="outline"
           [value]="titulo()"
           (ionInput)="titulo.set($any($event).detail.value ?? '')"
@@ -122,7 +137,7 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
         <ion-textarea
           class="campo"
           label="Descripción"
-          labelPlacement="floating"
+          labelPlacement="stacked"
           fill="outline"
           [autoGrow]="true"
           [value]="descripcion()"
@@ -132,7 +147,7 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
         <ion-input
           class="campo"
           label="Dirección o referencia (opcional)"
-          labelPlacement="floating"
+          labelPlacement="stacked"
           fill="outline"
           [value]="direccion()"
           (ionInput)="direccion.set($any($event).detail.value ?? '')"
@@ -141,7 +156,7 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
         <ion-input
           class="campo"
           label="Precio en soles (vacío = gratis)"
-          labelPlacement="floating"
+          labelPlacement="stacked"
           fill="outline"
           type="number"
           inputmode="decimal"
@@ -154,20 +169,22 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
           <ion-toggle [checked]="urgente()" (ionChange)="urgente.set($any($event).detail.checked)"></ion-toggle>
         </ion-item>
 
-        <div class="campo">
+        <label class="foto-input">
           <input type="file" accept="image/*" (change)="seleccionarFoto($event)" />
-          @if (foto(); as archivo) {
-            <p class="dato">Foto: {{ archivo.name }}</p>
-          } @else if (fotoUrlActual()) {
-            <ion-img class="foto" [src]="fotoUrlActual() ?? ''" alt="Foto actual"></ion-img>
-          }
-        </div>
+          <ion-icon name="camera-outline"></ion-icon>
+          <span>{{ foto()?.name ?? 'Agregar foto (opcional)' }}</span>
+        </label>
+
+        @if (fotoUrlActual() && !foto()) {
+          <ion-img class="foto" [src]="fotoUrlActual() ?? ''" alt="Foto actual"></ion-img>
+        }
 
         <p class="dato">Ubicación: usaremos tu posición actual (Arequipa si no hay permiso).</p>
 
         <ion-button
           class="campo"
           expand="block"
+          size="large"
           [disabled]="enviando() || buscandoDireccion() || !titulo().trim()"
           (click)="publicar()"
         >
@@ -191,28 +208,133 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
       .campo {
         margin-top: 16px;
       }
+      .pasos {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        margin: 4px 0 18px;
+      }
       .paso {
-        color: var(--ion-color-medium);
-        font-size: 0.85rem;
+        align-items: center;
+        color: var(--app-muted);
+        display: flex;
+        flex-direction: column;
+        font-size: 0.68rem;
+        gap: 4px;
+      }
+      .paso span {
+        align-items: center;
+        background: var(--app-surface-2);
+        border-radius: 50%;
+        display: flex;
+        font-size: 0.78rem;
+        font-weight: 600;
+        height: 28px;
+        justify-content: center;
+        width: 28px;
+      }
+      .paso em {
+        font-style: normal;
+      }
+      .paso.activo,
+      .paso.completo {
+        color: var(--ion-color-primary);
+      }
+      .paso.activo span,
+      .paso.completo span {
+        background: var(--ion-color-primary);
+        color: var(--ion-color-primary-contrast);
+      }
+      .linea {
+        background: var(--app-border);
+        height: 2px;
+        margin: 0 8px 16px;
+        width: 36px;
+      }
+      .linea.completo {
+        background: var(--ion-color-primary);
+      }
+      .titulo-paso {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 6px 0 10px;
+      }
+      .tipo {
+        --background: var(--tipo-suave);
+        border: 0;
+        box-shadow: none;
+        margin: 10px 0;
+      }
+      .tipo ion-card-content {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        padding: 14px;
+      }
+      .tipo-ofrezco {
+        --tipo: var(--ion-color-primary);
+        --tipo-suave: rgba(var(--ion-color-primary-rgb), 0.12);
+      }
+      .tipo-necesito {
+        --tipo: var(--ion-color-success);
+        --tipo-suave: var(--cat-comunidad-soft);
+      }
+      .tipo-intercambio {
+        --tipo: var(--cat-intercambio);
+        --tipo-suave: var(--cat-intercambio-soft);
+      }
+      .tipo-icono {
+        align-items: center;
+        background: var(--app-surface);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+        color: var(--tipo);
+        display: flex;
+        flex-shrink: 0;
+        font-size: 24px;
+        height: 48px;
+        justify-content: center;
+        width: 48px;
+      }
+      .tipo-texto h3 {
+        font-size: 1.02rem;
+        font-weight: 600;
+        margin: 0 0 2px;
+      }
+      .tipo-texto p {
+        color: var(--app-muted);
+        font-size: 0.8rem;
+        margin: 0;
       }
       .dato {
-        color: var(--ion-color-medium);
+        color: var(--app-muted);
         font-size: 0.85rem;
       }
+      .foto-input {
+        align-items: center;
+        border: 1.5px dashed var(--app-border);
+        border-radius: 14px;
+        color: var(--app-muted);
+        cursor: pointer;
+        display: flex;
+        font-size: 0.85rem;
+        gap: 10px;
+        margin-top: 16px;
+        padding: 14px;
+      }
+      .foto-input input {
+        display: none;
+      }
+      .foto-input ion-icon {
+        font-size: 22px;
+      }
       .foto {
+        border-radius: 12px;
         display: block;
+        margin-top: 10px;
+        max-height: 200px;
         max-width: 100%;
-        border-radius: 8px;
-        margin-top: 8px;
-      }
-      ion-card h3 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 8px 0 4px;
-      }
-      ion-card p {
-        margin: 0;
-        color: var(--ion-color-medium);
+        object-fit: cover;
       }
     `,
   ],
@@ -242,7 +364,7 @@ export class PublicarPage {
   private miPos: Posicion = POSICION_POR_DEFECTO;
 
   constructor() {
-    addIcons({ handLeftOutline, searchOutline, swapHorizontalOutline });
+    addIcons({ cameraOutline, handLeftOutline, searchOutline, swapHorizontalOutline });
   }
 
   async ionViewWillEnter(): Promise<void> {

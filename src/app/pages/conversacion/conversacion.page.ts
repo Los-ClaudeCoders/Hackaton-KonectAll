@@ -16,7 +16,7 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { ellipsisHorizontal } from 'ionicons/icons';
+import { chatbubblesOutline, ellipsisHorizontal, sendOutline } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth.service';
 import { MensajesService } from '../../core/mensajes.service';
@@ -24,6 +24,7 @@ import type { Mensaje } from '../../core/models';
 import { ModeracionService } from '../../core/moderacion.service';
 import { UiService } from '../../core/ui.service';
 import { mensajeError } from '../../shared/errores.util';
+import { AvatarComponent } from '../../shared/ui/avatar.component';
 
 @Component({
   selector: 'app-conversacion',
@@ -40,6 +41,7 @@ import { mensajeError } from '../../shared/errores.util';
     IonButton,
     IonIcon,
     IonSpinner,
+    AvatarComponent,
   ],
   template: `
     <ion-header>
@@ -47,7 +49,12 @@ import { mensajeError } from '../../shared/errores.util';
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/tabs/chat"></ion-back-button>
         </ion-buttons>
-        <ion-title>{{ otroNombre() }}</ion-title>
+        <ion-title>
+          <div class="titulo-chat">
+            <app-avatar [nombre]="otroNombre()" tamano="sm"></app-avatar>
+            <span>{{ otroNombre() }}</span>
+          </div>
+        </ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="mas()" aria-label="Más opciones">
             <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
@@ -57,7 +64,7 @@ import { mensajeError } from '../../shared/errores.util';
     </ion-header>
 
     <ion-content class="ion-padding">
-      <p class="dato">Sobre: {{ titulo() }}</p>
+      <p class="sobre">{{ titulo() }}</p>
 
       @if (cargando()) {
         <div class="centrado"><ion-spinner></ion-spinner></div>
@@ -70,13 +77,16 @@ import { mensajeError } from '../../shared/errores.util';
         </div>
       } @empty {
         @if (!cargando()) {
-          <p class="dato">Escribe el primer mensaje a {{ otroNombre() }}.</p>
+          <div class="vacio-chat">
+            <ion-icon name="chatbubbles-outline"></ion-icon>
+            <p>Escribe el primer mensaje a {{ otroNombre() }}.</p>
+          </div>
         }
       }
     </ion-content>
 
     <ion-footer>
-      <ion-toolbar>
+      <ion-toolbar class="barra">
         <div class="enviar">
           <ion-input
             fill="outline"
@@ -86,54 +96,97 @@ import { mensajeError } from '../../shared/errores.util';
             (ionInput)="texto.set($any($event).detail.value ?? '')"
             (keyup.enter)="enviar()"
           ></ion-input>
-          <ion-button [disabled]="enviando() || !texto().trim()" (click)="enviar()">Enviar</ion-button>
+          <ion-button class="boton-enviar" [disabled]="enviando() || !texto().trim()" (click)="enviar()">
+            <ion-icon slot="start" name="send-outline"></ion-icon>
+            Enviar
+          </ion-button>
         </div>
       </ion-toolbar>
     </ion-footer>
   `,
   styles: [
     `
-      .dato {
-        color: var(--ion-color-medium);
+      .titulo-chat {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+      .titulo-chat span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sobre {
+        color: var(--app-muted);
+        font-size: 0.75rem;
+        margin: 0 0 14px;
+        text-align: center;
       }
       .centrado {
-        text-align: center;
         padding: 24px;
+        text-align: center;
       }
       .mensaje {
+        align-items: flex-start;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
         margin: 8px 0;
       }
       .mensaje.mio {
         align-items: flex-end;
       }
       .burbuja {
-        background: var(--ion-color-light);
-        border-radius: 12px;
+        background: var(--app-surface);
+        border: 1px solid var(--app-border);
+        border-radius: 16px 16px 16px 4px;
         margin: 0;
-        max-width: 80%;
-        padding: 8px 12px;
+        max-width: 78%;
+        padding: 9px 12px;
         white-space: pre-wrap;
       }
       .mio .burbuja {
         background: var(--ion-color-primary);
+        border-color: transparent;
+        border-radius: 16px 16px 4px 16px;
         color: var(--ion-color-primary-contrast);
       }
       .hora {
-        color: var(--ion-color-medium);
-        font-size: 0.7rem;
-        margin-top: 2px;
+        color: var(--app-muted);
+        font-size: 0.65rem;
+        margin-top: 3px;
+      }
+      .vacio-chat {
+        align-items: center;
+        color: var(--app-muted);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 32px 16px;
+        text-align: center;
+      }
+      .vacio-chat ion-icon {
+        font-size: 34px;
+      }
+      .vacio-chat p {
+        font-size: 0.85rem;
+        margin: 0;
+      }
+      .barra {
+        --background: var(--app-surface);
+        border-top: 1px solid var(--app-border);
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
       }
       .enviar {
+        align-items: center;
         display: flex;
         gap: 8px;
-        align-items: center;
-        padding: 0 8px;
       }
       .enviar ion-input {
         flex: 1;
+      }
+      .boton-enviar {
+        --border-radius: 12px;
+        height: 40px;
       }
     `,
   ],
@@ -159,7 +212,7 @@ export class ConversacionPage implements OnDestroy {
   readonly enviando = signal(false);
 
   constructor() {
-    addIcons({ ellipsisHorizontal });
+    addIcons({ chatbubblesOutline, ellipsisHorizontal, sendOutline });
   }
 
   async ionViewWillEnter(): Promise<void> {

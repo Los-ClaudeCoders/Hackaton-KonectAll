@@ -1,4 +1,4 @@
-import type { EstadoPublicacion, ModoPublicacion, TipoPublicacion } from '../core/models';
+import type { EstadoPublicacion, ModoPublicacion, Publicacion, TipoPublicacion } from '../core/models';
 
 export interface OpcionTipo {
   valor: TipoPublicacion;
@@ -13,8 +13,8 @@ export interface OpcionCategoria {
 }
 
 export const TIPOS: OpcionTipo[] = [
-  { valor: 'ofrezco', etiqueta: 'Ofrezco', icono: 'hand-left-outline', color: 'success' },
-  { valor: 'necesito', etiqueta: 'Necesito', icono: 'search-outline', color: 'warning' },
+  { valor: 'ofrezco', etiqueta: 'Ofrezco', icono: 'hand-left-outline', color: 'primary' },
+  { valor: 'necesito', etiqueta: 'Necesito', icono: 'search-outline', color: 'success' },
   {
     valor: 'intercambio',
     etiqueta: 'Intercambio',
@@ -55,4 +55,47 @@ export function etiquetaCategoria(categoria: string): string {
 
 export function textoPrecio(precio: number | null | undefined): string {
   return precio == null ? 'Gratis' : `S/ ${precio.toFixed(2)}`;
+}
+
+export interface VisualPublicacion {
+  color: string;
+  suave: string;
+  icono: string;
+}
+
+/** Color e icono de una publicación según tipo, categoría y emergencia. */
+export function visualPublicacion(publicacion: Pick<Publicacion, 'tipo' | 'modo' | 'categoria'>): VisualPublicacion {
+  if (publicacion.modo === 'emergencia') {
+    return {
+      color: 'var(--cat-emergencia)',
+      suave: 'var(--cat-emergencia-soft)',
+      icono: 'alert-circle-outline',
+    };
+  }
+  if (publicacion.tipo === 'intercambio') {
+    return {
+      color: 'var(--cat-intercambio)',
+      suave: 'var(--cat-intercambio-soft)',
+      icono: 'swap-horizontal-outline',
+    };
+  }
+  if (publicacion.categoria === 'producto') {
+    return {
+      color: 'var(--ion-color-primary)',
+      suave: 'rgba(var(--ion-color-primary-rgb), 0.14)',
+      icono: 'bag-handle-outline',
+    };
+  }
+  if (publicacion.categoria === 'servicio') {
+    return {
+      color: 'var(--cat-servicio)',
+      suave: 'var(--cat-servicio-soft)',
+      icono: 'construct-outline',
+    };
+  }
+  return {
+    color: 'var(--cat-comunidad)',
+    suave: 'var(--cat-comunidad-soft)',
+    icono: 'pricetag-outline',
+  };
 }

@@ -1,4 +1,4 @@
-﻿import type { OnInit } from '@angular/core';
+import type { OnInit } from '@angular/core';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
@@ -10,21 +10,26 @@ import {
   IonCardContent,
   IonChip,
   IonContent,
+  IonFooter,
   IonHeader,
   IonIcon,
-  IonImg,
   IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  callOutline,
+  alertCircleOutline,
+  bagHandleOutline,
   chatbubbleEllipsesOutline,
   checkmarkDoneOutline,
+  constructOutline,
   flagOutline,
   locationOutline,
+  logoWhatsapp,
   personRemoveOutline,
+  pricetagOutline,
+  swapHorizontalOutline,
   thumbsUpOutline,
 } from 'ionicons/icons';
 
@@ -34,9 +39,16 @@ import { ModeracionService } from '../../core/moderacion.service';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { SupabaseService } from '../../core/supabase.service';
 import { UiService } from '../../core/ui.service';
-import { etiquetaCategoria, etiquetaEstado, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util';
+import {
+  etiquetaCategoria,
+  etiquetaEstado,
+  etiquetaTipo,
+  textoPrecio,
+  visualPublicacion,
+} from '../../shared/catalogo.util';
 import { abrirWhatsApp } from '../../shared/contacto.util';
 import { guardarContacto } from '../../shared/contactos.util';
+import { AvatarComponent } from '../../shared/ui/avatar.component';
 
 @Component({
   selector: 'app-detalle',
@@ -52,9 +64,10 @@ import { guardarContacto } from '../../shared/contactos.util';
     IonCard,
     IonCardContent,
     IonChip,
+    IonFooter,
     IonIcon,
-    IonImg,
     IonSpinner,
+    AvatarComponent,
   ],
   template: `
     <ion-header>
@@ -70,140 +83,249 @@ import { guardarContacto } from '../../shared/contactos.util';
       @if (cargando()) {
         <div class="centrado"><ion-spinner></ion-spinner></div>
       }
+
       @if (!cargando() && publicacion(); as p) {
-        <h1>{{ p.titulo }}</h1>
-
-        <p class="autor">
-          {{ p.perfiles?.nombre ?? 'Vecino' }}
-          @if (p.perfiles?.barrio) {
-            · {{ p.perfiles.barrio }}
+        <div class="hero" [style.background]="visual().suave">
+          @if (p.foto_url) {
+            <img class="hero-foto" [src]="p.foto_url" [alt]="p.titulo" />
+          } @else {
+            <ion-icon class="hero-icono" [name]="visual().icono" [style.color]="visual().color"></ion-icon>
           }
-          · {{ p.distanciaKm?.toFixed(1) ?? '?' }} km
-        </p>
-
-        @if (p.direccion) {
-          <p class="direccion"><ion-icon name="location-outline"></ion-icon> {{ p.direccion }}</p>
-        }
-
-        <div class="chips">
-          <ion-chip color="primary" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
-          <ion-chip color="medium" outline>{{ etiquetaCategoria(p.categoria) }}</ion-chip>
-          <ion-chip color="medium" outline>{{ textoPrecio(p.precio) }}</ion-chip>
-          @if (p.modo === 'emergencia' || p.urgente) {
-            <ion-chip color="danger" outline>Urgente</ion-chip>
-          }
-          <ion-chip [color]="p.estado === 'atendida' ? 'medium' : 'success'" outline>
+          <ion-chip class="estado" [color]="p.estado === 'atendida' ? 'medium' : 'success'">
             {{ etiquetaEstado(p.estado) }}
           </ion-chip>
         </div>
 
-        @if (p.foto_url) {
-          <ion-img class="foto" [src]="p.foto_url" [alt]="p.titulo"></ion-img>
-        }
-
-        @if (p.descripcion) {
-          <p class="descripcion">{{ p.descripcion }}</p>
-        }
-
-        <ion-card>
-          <ion-card-content>
-            <strong>Visto Bueno Vecinal</strong>
-            <p>
-              {{ recomendaciones() }}
-              {{ recomendaciones() === 1 ? 'vecino recomienda' : 'vecinos recomiendan' }}
-              esta publicación.
-            </p>
-            @if (esMio()) {
-              <ion-button expand="block" fill="outline" (click)="atender()">
-                <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
-                Marcar como atendida
-              </ion-button>
-            } @else {
-              <ion-button
-                expand="block"
-                fill="outline"
-                color="success"
-                [disabled]="yaRecomende()"
-                (click)="recomendar()"
-              >
-                <ion-icon slot="start" name="thumbs-up-outline"></ion-icon>
-                {{ yaRecomende() ? 'Ya recomendaste' : 'Recomendar' }}
-              </ion-button>
-            }
-          </ion-card-content>
-        </ion-card>
-
-        @if (!esMio()) {
-          <ion-button expand="block" fill="outline" (click)="enviarMensaje()">
-            <ion-icon slot="start" name="chatbubble-ellipses-outline"></ion-icon>
-            Enviar mensaje
-          </ion-button>
-        }
-
-        <ion-button expand="block" size="large" color="success" (click)="contactar()">
-          <ion-icon slot="start" name="call-outline"></ion-icon>
-          Contactar por WhatsApp
-        </ion-button>
-
-        @if (!esMio()) {
-          <div class="moderacion">
-            @if (!denunciado()) {
-              <ion-button size="small" fill="outline" color="medium" (click)="reportar()">
-                <ion-icon slot="start" name="flag-outline"></ion-icon>
-                Reportar
-              </ion-button>
-            }
-            <ion-button size="small" fill="outline" color="danger" (click)="bloquear()">
-              <ion-icon slot="start" name="person-remove-outline"></ion-icon>
-              Bloquear
-            </ion-button>
+        <div class="contenido">
+          <div class="autor">
+            <app-avatar [nombre]="p.perfiles?.nombre ?? 'Vecino'" tamano="md"></app-avatar>
+            <div class="autor-info">
+              <strong>{{ p.perfiles?.nombre ?? 'Vecino' }}</strong>
+              <span>
+                {{ p.perfiles?.barrio ?? 'Arequipa' }} · {{ p.distanciaKm?.toFixed(1) ?? '?' }} km ·
+                {{ fecha(p.creado_en) }}
+              </span>
+            </div>
+            <span class="precio" [class.gratis]="esGratis()">{{ textoPrecio(p.precio) }}</span>
           </div>
-        }
+
+          <h1>{{ p.titulo }}</h1>
+
+          @if (p.direccion) {
+            <p class="direccion"><ion-icon name="location-outline"></ion-icon> {{ p.direccion }}</p>
+          }
+
+          <div class="chips">
+            <ion-chip color="primary" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
+            <ion-chip color="medium" outline>{{ etiquetaCategoria(p.categoria) }}</ion-chip>
+            @if (p.modo === 'emergencia' || p.urgente) {
+              <ion-chip color="danger" outline>Urgente</ion-chip>
+            }
+          </div>
+
+          @if (p.descripcion) {
+            <p class="descripcion">{{ p.descripcion }}</p>
+          }
+
+          <ion-card class="recomendacion">
+            <ion-card-content>
+              <div class="reco-fila">
+                <div class="reco-icono"><ion-icon name="thumbs-up-outline"></ion-icon></div>
+                <div>
+                  <strong>Visto Bueno Vecinal</strong>
+                  <p>
+                    {{ recomendaciones() }}
+                    {{ recomendaciones() === 1 ? 'vecino recomienda' : 'vecinos recomiendan' }}
+                    esta publicación.
+                  </p>
+                </div>
+              </div>
+              @if (esMio()) {
+                <ion-button expand="block" fill="outline" (click)="atender()">
+                  <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+                  Marcar como atendida
+                </ion-button>
+              }
+            </ion-card-content>
+          </ion-card>
+
+          @if (!esMio()) {
+            <div class="moderacion">
+              @if (!denunciado()) {
+                <ion-button size="small" fill="clear" color="medium" (click)="reportar()">
+                  <ion-icon slot="start" name="flag-outline"></ion-icon>
+                  Reportar
+                </ion-button>
+              }
+              <ion-button size="small" fill="clear" color="danger" (click)="bloquear()">
+                <ion-icon slot="start" name="person-remove-outline"></ion-icon>
+                Bloquear
+              </ion-button>
+            </div>
+          }
+        </div>
       }
     </ion-content>
+
+    @if (!esMio() && publicacion()) {
+      <ion-footer>
+        <ion-toolbar class="pie">
+          <div class="acciones">
+            <ion-button class="principal" expand="block" color="success" (click)="contactar()">
+              <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
+              Contactar
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="enviarMensaje()">
+              <ion-icon slot="start" name="chatbubble-ellipses-outline"></ion-icon>
+              Enviar mensaje
+            </ion-button>
+            <ion-button expand="block" fill="outline" color="success" [disabled]="yaRecomende()" (click)="recomendar()">
+              <ion-icon slot="start" name="thumbs-up-outline"></ion-icon>
+              {{ yaRecomende() ? 'Ya recomendaste' : 'Recomendar' }}
+            </ion-button>
+          </div>
+        </ion-toolbar>
+      </ion-footer>
+    }
   `,
   styles: [
     `
-      h1 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin: 8px 0;
+      .centrado {
+        padding: 24px;
+        text-align: center;
+      }
+      .hero {
+        align-items: center;
+        border-radius: 0 0 22px 22px;
+        display: flex;
+        height: 220px;
+        justify-content: center;
+        margin: -16px -16px 16px;
+        overflow: hidden;
+        position: relative;
+      }
+      .hero-foto {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+      }
+      .hero-icono {
+        font-size: 84px;
+        opacity: 0.85;
+      }
+      .estado {
+        position: absolute;
+        right: 14px;
+        top: 14px;
       }
       .autor {
-        color: var(--ion-color-medium);
-        margin-top: 0;
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .autor-info {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        line-height: 1.3;
+        min-width: 0;
+      }
+      .autor-info strong {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .autor-info span {
+        color: var(--app-muted);
+        font-size: 0.74rem;
+      }
+      .precio {
+        background: var(--app-surface-2);
+        border-radius: 999px;
+        font-size: 1rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        white-space: nowrap;
+      }
+      .precio.gratis {
+        background: var(--ion-color-success);
+        color: var(--ion-color-success-contrast);
+      }
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1.25;
+        margin: 0 0 8px;
       }
       .direccion {
         align-items: center;
-        color: var(--ion-color-medium);
+        color: var(--app-muted);
         display: flex;
         gap: 4px;
-        margin-top: 0;
+        margin: 0 0 8px;
       }
       .chips {
         display: flex;
         flex-wrap: wrap;
         gap: 4px;
-      }
-      .foto {
-        width: 100%;
-        border-radius: 12px;
-        margin: 12px 0;
+        margin-bottom: 12px;
       }
       .descripcion {
-        font-size: 1rem;
-        line-height: 1.5;
+        color: var(--app-text);
+        font-size: 0.98rem;
+        line-height: 1.55;
+        margin: 0 0 16px;
+        white-space: pre-wrap;
       }
-      .centrado {
-        text-align: center;
-        padding: 24px;
+      .recomendacion {
+        margin-top: 4px;
+      }
+      .reco-fila {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .reco-icono {
+        align-items: center;
+        background: var(--cat-comunidad-soft);
+        border-radius: 12px;
+        color: var(--cat-comunidad);
+        display: flex;
+        flex-shrink: 0;
+        font-size: 22px;
+        height: 42px;
+        justify-content: center;
+        width: 42px;
+      }
+      .reco-fila p {
+        color: var(--app-muted);
+        font-size: 0.82rem;
+        margin: 2px 0 0;
       }
       .moderacion {
         display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+        gap: 4px;
         justify-content: center;
-        margin-top: 16px;
+        margin-top: 8px;
+      }
+      .pie {
+        --background: var(--app-surface);
+        border-top: 1px solid var(--app-border);
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+      }
+      .acciones {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 1fr 1fr;
+      }
+      .acciones ion-button {
+        font-size: 0.78rem;
+        margin: 0;
+      }
+      .acciones .principal {
+        grid-column: 1 / -1;
       }
     `,
   ],
@@ -231,16 +353,31 @@ export class DetallePage implements OnInit {
   readonly esMio = computed(() => this.auth.usuario()?.id === this.publicacion()?.autor_id);
   readonly recomendaciones = computed(() => this.publicacion()?.recomendaciones?.[0]?.count ?? 0);
   readonly yaRecomende = computed(() => this.pubs.misRecomendaciones().has(this.publicacion()?.id ?? ''));
+  readonly visual = computed(() => {
+    const p = this.publicacion();
+    return p
+      ? visualPublicacion(p)
+      : { color: 'var(--ion-color-primary)', suave: 'var(--app-surface-2)', icono: 'pricetag-outline' };
+  });
+  readonly esGratis = computed(() => {
+    const precio = this.publicacion()?.precio;
+    return precio === null || precio === undefined;
+  });
 
   constructor() {
     addIcons({
-      callOutline,
+      alertCircleOutline,
+      bagHandleOutline,
       chatbubbleEllipsesOutline,
-      thumbsUpOutline,
       checkmarkDoneOutline,
+      constructOutline,
       flagOutline,
       locationOutline,
+      logoWhatsapp,
       personRemoveOutline,
+      pricetagOutline,
+      swapHorizontalOutline,
+      thumbsUpOutline,
     });
   }
 
@@ -264,6 +401,17 @@ export class DetallePage implements OnInit {
     pub.distanciaKm = this.pubs.publicaciones().find((p) => p.id === pub.id)?.distanciaKm;
     this.publicacion.set(pub);
     this.cargando.set(false);
+  }
+
+  fecha(iso: string): string {
+    const minutos = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
+    if (minutos < 1) return 'ahora';
+    if (minutos < 60) return `hace ${minutos} min`;
+    const horas = Math.round(minutos / 60);
+    if (horas < 24) return `hace ${horas} h`;
+    const dias = Math.round(horas / 24);
+    if (dias < 7) return `hace ${dias} d`;
+    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
   }
 
   async enviarMensaje(): Promise<void> {

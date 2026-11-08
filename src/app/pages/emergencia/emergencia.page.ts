@@ -6,7 +6,6 @@ import {
   IonButtons,
   IonCard,
   IonCardContent,
-  IonChip,
   IonContent,
   IonHeader,
   IonIcon,
@@ -15,7 +14,6 @@ import {
   IonList,
   IonRefresher,
   IonRefresherContent,
-  IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -26,8 +24,10 @@ import { alertCircleOutline, callOutline, handLeftOutline, searchOutline } from 
 import type { Publicacion, TipoPublicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { UiService } from '../../core/ui.service';
-import { etiquetaTipo, textoPrecio } from '../../shared/catalogo.util';
 import { abrirWhatsApp } from '../../shared/contacto.util';
+import { EsqueletoListadoComponent } from '../../shared/ui/esqueleto-listado.component';
+import { EstadoVacioComponent } from '../../shared/ui/estado-vacio.component';
+import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.component';
 
 @Component({
   selector: 'app-emergencia',
@@ -42,14 +42,15 @@ import { abrirWhatsApp } from '../../shared/contacto.util';
     IonButton,
     IonCard,
     IonCardContent,
-    IonChip,
     IonIcon,
     IonList,
     IonItem,
     IonLabel,
-    IonSpinner,
     IonRefresher,
     IonRefresherContent,
+    PublicacionCardComponent,
+    EstadoVacioComponent,
+    EsqueletoListadoComponent,
   ],
   template: `
     <ion-header>
@@ -66,69 +67,62 @@ import { abrirWhatsApp } from '../../shared/contacto.util';
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <ion-card color="danger">
+      <ion-card color="danger" class="aviso">
         <ion-card-content>
-          Si hay riesgo de vida, llama primero a los servicios de emergencia. Usa esta pantalla para pedir u ofrecer
-          ayuda a tus vecinos.
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <div>
+            <strong>¿Necesitas ayuda urgente?</strong>
+            <p>Si hay riesgo de vida, llama primero a los servicios de emergencia.</p>
+          </div>
         </ion-card-content>
       </ion-card>
 
-      <ion-button expand="block" color="danger" size="large" (click)="publicar('necesito')">
-        <ion-icon slot="start" name="search-outline"></ion-icon>
-        Pedir ayuda
-      </ion-button>
+      <div class="acciones-rapidas">
+        <ion-card button class="rapida pedir" (click)="publicar('necesito')">
+          <ion-card-content>
+            <div class="rapida-icono"><ion-icon name="search-outline"></ion-icon></div>
+            <h2>Solicitar ayuda</h2>
+            <p>¿Qué necesitas?</p>
+          </ion-card-content>
+        </ion-card>
 
-      <ion-button
-        class="campo"
-        expand="block"
-        color="success"
-        fill="outline"
-        size="large"
-        (click)="publicar('ofrezco')"
-      >
-        <ion-icon slot="start" name="hand-left-outline"></ion-icon>
-        Ofrecer recursos
-      </ion-button>
+        <ion-card button class="rapida ofrecer" (click)="publicar('ofrezco')">
+          <ion-card-content>
+            <div class="rapida-icono"><ion-icon name="hand-left-outline"></ion-icon></div>
+            <h2>Ofrecer recursos</h2>
+            <p>¿Qué puedes ofrecer?</p>
+          </ion-card-content>
+        </ion-card>
+      </div>
 
-      <h2>Urgentes cerca de ti</h2>
+      <h2 class="seccion">Urgentes cerca de ti</h2>
 
       @if (pubs.cargando() && emergencias().length === 0) {
-        <div class="centrado"><ion-spinner></ion-spinner></div>
+        <app-esqueleto-listado [filas]="2"></app-esqueleto-listado>
       }
 
       @for (p of emergencias(); track p.id) {
-        <ion-card>
-          <ion-card-content>
-            <ion-chip color="danger" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
-            <ion-chip color="medium" outline>{{ textoPrecio(p.precio) }}</ion-chip>
-            <h3>{{ p.titulo }}</h3>
-            <p class="dato">
-              {{ p.perfiles?.nombre ?? 'Vecino' }}
-              @if (p.perfiles?.barrio) {
-                · {{ p.perfiles.barrio }}
-              }
-              · {{ p.distanciaKm?.toFixed(1) ?? '?' }} km
-            </p>
-            @if (p.descripcion) {
-              <p>{{ p.descripcion }}</p>
-            }
-            <div class="acciones">
-              <ion-button size="small" fill="outline" (click)="ver(p)">Ver detalle</ion-button>
-              <ion-button size="small" color="success" (click)="whatsapp(p)">
-                <ion-icon slot="start" name="call-outline"></ion-icon>
-                WhatsApp
-              </ion-button>
-            </div>
-          </ion-card-content>
-        </ion-card>
+        <app-publicacion-card [publicacion]="p" [interactiva]="false" [style.--i]="$index">
+          <div class="acciones">
+            <ion-button size="small" fill="outline" (click)="ver(p)">Ver detalle</ion-button>
+            <ion-button size="small" color="success" (click)="whatsapp(p)">
+              <ion-icon slot="start" name="call-outline"></ion-icon>
+              WhatsApp
+            </ion-button>
+          </div>
+        </app-publicacion-card>
       } @empty {
         @if (!pubs.cargando()) {
-          <p class="dato">No hay pedidos de ayuda activos. Todo tranquilo por ahora.</p>
+          <app-estado-vacio
+            icono="alert-circle-outline"
+            titulo="Todo tranquilo"
+            texto="No hay pedidos de ayuda activos en tu zona."
+          ></app-estado-vacio>
         }
       }
 
-      <h2>Contactos de emergencia</h2>
-      <ion-list>
+      <h2 class="seccion">Contactos de emergencia</h2>
+      <ion-list class="contactos">
         <ion-item href="tel:105">
           <ion-icon slot="start" name="call-outline" color="primary"></ion-icon>
           <ion-label>Policía · 105</ion-label>
@@ -150,24 +144,81 @@ import { abrirWhatsApp } from '../../shared/contacto.util';
   `,
   styles: [
     `
-      .campo {
-        margin-top: 12px;
+      .aviso ion-card-content {
+        align-items: center;
+        display: flex;
+        gap: 12px;
       }
-      .centrado {
-        text-align: center;
-        padding: 24px;
+      .aviso ion-icon {
+        font-size: 28px;
       }
-      .dato {
-        color: var(--ion-color-medium);
-        font-size: 0.85rem;
+      .aviso p {
+        font-size: 0.8rem;
+        margin: 2px 0 0;
+        opacity: 0.9;
+      }
+      .acciones-rapidas {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr 1fr;
+        margin: 14px 0;
+      }
+      .rapida {
+        --background: var(--rapida-suave);
+        border: 0;
+        box-shadow: none;
+        margin: 0;
+      }
+      .rapida ion-card-content {
+        padding: 14px;
+      }
+      .rapida-icono {
+        align-items: center;
+        background: var(--app-surface);
+        border-radius: 12px;
+        color: var(--rapida);
+        display: flex;
+        font-size: 22px;
+        height: 40px;
+        justify-content: center;
+        margin-bottom: 8px;
+        width: 40px;
+      }
+      .rapida h2 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 0 0 2px;
+      }
+      .rapida p {
+        color: var(--app-muted);
+        font-size: 0.75rem;
+        margin: 0;
+      }
+      .pedir {
+        --rapida: var(--ion-color-danger);
+        --rapida-suave: var(--cat-emergencia-soft);
+      }
+      .ofrecer {
+        --rapida: var(--ion-color-success);
+        --rapida-suave: var(--cat-comunidad-soft);
+      }
+      .seccion {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 18px 0 8px;
       }
       .acciones {
         display: flex;
-        gap: 8px;
         flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
       }
-      h3 {
-        margin: 8px 0 4px;
+      .contactos {
+        background: var(--app-surface);
+        border: 1px solid var(--app-border);
+        border-radius: var(--app-radius);
+        box-shadow: var(--app-shadow);
+        margin: 8px 0 0;
       }
     `,
   ],
@@ -176,9 +227,6 @@ export class EmergenciaPage {
   readonly pubs = inject(PublicacionesService);
   private ui = inject(UiService);
   private router = inject(Router);
-
-  readonly etiquetaTipo = etiquetaTipo;
-  readonly textoPrecio = textoPrecio;
 
   readonly emergencias = computed(() => this.pubs.cercanas().filter((p) => p.modo === 'emergencia'));
 

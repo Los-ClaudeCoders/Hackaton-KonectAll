@@ -8,7 +8,7 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  IonSpinner,
+  IonSkeletonText,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -24,11 +24,25 @@ import { abrirWhatsApp } from '../../shared/contacto.util';
 import type { ContactoChat } from '../../shared/contactos.util';
 import { borrarContactos, leerContactos } from '../../shared/contactos.util';
 import { mensajeError } from '../../shared/errores.util';
+import { AvatarComponent } from '../../shared/ui/avatar.component';
+import { EstadoVacioComponent } from '../../shared/ui/estado-vacio.component';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent, IonButton, IonIcon, IonSpinner],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardContent,
+    IonButton,
+    IonIcon,
+    IonSkeletonText,
+    AvatarComponent,
+    EstadoVacioComponent,
+  ],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -38,54 +52,70 @@ import { mensajeError } from '../../shared/errores.util';
 
     <ion-content class="ion-padding">
       @if (!auth.usuario()) {
-        <ion-card>
-          <ion-card-content>
-            <strong>Mensajes con tus vecinos</strong>
-            <p>Inicia sesión para conversar sobre una publicación.</p>
-            <ion-button expand="block" (click)="iniciarSesion()">Iniciar sesión</ion-button>
-          </ion-card-content>
-        </ion-card>
+        <app-estado-vacio
+          icono="chatbubbles-outline"
+          titulo="Mensajes con tus vecinos"
+          texto="Inicia sesión para conversar sobre una publicación."
+          accionTexto="Iniciar sesión"
+          (accion)="iniciarSesion()"
+        ></app-estado-vacio>
       } @else {
-        <h2>Conversaciones</h2>
+        <h2 class="seccion">Conversaciones</h2>
 
         @if (cargando()) {
-          <div class="centrado"><ion-spinner></ion-spinner></div>
+          @for (i of [1, 2, 3]; track i) {
+            <ion-card>
+              <ion-card-content class="esqueleto">
+                <ion-skeleton-text [animated]="true" style="width: 55%; height: 14px"></ion-skeleton-text>
+                <ion-skeleton-text [animated]="true" style="width: 85%; height: 12px"></ion-skeleton-text>
+              </ion-card-content>
+            </ion-card>
+          }
         }
 
         @for (c of conversaciones(); track c.publicacion_id + ':' + c.otro_id) {
-          <ion-card button (click)="abrir(c)">
+          <ion-card button class="aparecer conversacion" [style.--i]="$index" (click)="abrir(c)">
             <ion-card-content>
-              <h3>{{ c.titulo }}</h3>
-              <p class="dato">{{ c.otro_nombre }} · {{ fecha(c) }}</p>
-              <p class="ultimo">{{ c.ultimo_texto }}</p>
+              <app-avatar [nombre]="c.otro_nombre" tamano="md"></app-avatar>
+              <div class="info">
+                <div class="linea">
+                  <strong>{{ c.otro_nombre }}</strong>
+                  <span>{{ fecha(c) }}</span>
+                </div>
+                <h3 class="titulo">{{ c.titulo }}</h3>
+                <p class="ultimo">{{ c.ultimo_texto }}</p>
+              </div>
             </ion-card-content>
           </ion-card>
         } @empty {
           @if (!cargando()) {
-            <ion-card>
-              <ion-card-content>
-                Aún no tienes conversaciones. Entra a una publicación y toca “Enviar mensaje”.
-                <ion-button expand="block" fill="clear" (click)="explorar()">Ver publicaciones</ion-button>
-              </ion-card-content>
-            </ion-card>
+            <app-estado-vacio
+              icono="chatbubbles-outline"
+              titulo="Sin conversaciones"
+              texto="Entra a una publicación y toca “Enviar mensaje”."
+              accionTexto="Ver publicaciones"
+              (accion)="explorar()"
+            ></app-estado-vacio>
           }
         }
       }
 
       @if (contactos().length) {
-        <h2>Contactos por WhatsApp</h2>
-        <ion-button fill="clear" size="small" color="medium" (click)="limpiar()">Limpiar historial</ion-button>
+        <div class="fila-seccion">
+          <h2 class="seccion">Contactos por WhatsApp</h2>
+          <ion-button fill="clear" size="small" color="medium" (click)="limpiar()">Limpiar</ion-button>
+        </div>
 
         @for (c of contactos(); track c.publicacion_id) {
-          <ion-card>
+          <ion-card class="aparecer contacto" [style.--i]="$index">
             <ion-card-content>
-              <h3>{{ c.titulo }}</h3>
-              <p class="dato">{{ c.autor }} · {{ fechaContacto(c) }}</p>
-              <ion-button size="small" color="success" (click)="whatsapp(c)">
-                <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
-                WhatsApp
-              </ion-button>
-              <ion-button size="small" fill="clear" (click)="ver(c)">Ver publicación</ion-button>
+              <div class="contacto-icono"><ion-icon name="logo-whatsapp"></ion-icon></div>
+              <div class="info">
+                <p class="titulo">{{ c.titulo }}</p>
+                <p class="dato">{{ c.autor }} · {{ fechaContacto(c) }}</p>
+              </div>
+              <ion-button size="small" fill="clear" color="success" (click)="whatsapp(c)">WhatsApp</ion-button>
+              <ion-button size="small" fill="clear" (click)="ver(c)">Ver</ion-button>
             </ion-card-content>
           </ion-card>
         }
@@ -94,21 +124,82 @@ import { mensajeError } from '../../shared/errores.util';
   `,
   styles: [
     `
-      h2 {
-        margin-top: 20px;
+      .seccion {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 18px 0 8px;
       }
-      h3 {
-        margin-top: 0;
+      .esqueleto {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
       }
-      .dato {
-        color: var(--ion-color-medium);
+      .conversacion ion-card-content {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+      }
+      .info {
+        flex: 1;
+        min-width: 0;
+      }
+      .linea {
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+      }
+      .linea strong {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .linea span {
+        color: var(--app-muted);
+        font-size: 0.7rem;
+        white-space: nowrap;
+      }
+      .titulo {
+        color: var(--ion-color-primary);
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin: 2px 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .ultimo {
-        margin-bottom: 0;
+        color: var(--app-muted);
+        font-size: 0.8rem;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
-      .centrado {
-        text-align: center;
-        padding: 24px;
+      .dato {
+        color: var(--app-muted);
+        font-size: 0.75rem;
+        margin: 0;
+      }
+      .fila-seccion {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+      }
+      .contacto ion-card-content {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+      .contacto-icono {
+        align-items: center;
+        background: var(--cat-comunidad-soft);
+        border-radius: 12px;
+        color: var(--cat-comunidad);
+        display: flex;
+        flex-shrink: 0;
+        font-size: 20px;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
       }
     `,
   ],

@@ -36,6 +36,164 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
 
+/* Poppins (auto-almacenada; licencia OFL en assets/fonts/OFL.txt) */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/poppins-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/poppins-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/fonts/poppins-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/poppins-700.woff2') format('woff2');
+}
+
+html,
+body {
+  font-family: var(--ion-font-family);
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--app-text);
+  letter-spacing: -0.01em;
+}
+
+ion-content {
+  --background: var(--app-bg);
+}
+
+ion-toolbar {
+  --border-width: 0;
+}
+
+ion-card {
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow);
+}
+
+ion-card-content {
+  font-size: 0.95rem;
+}
+
+ion-button {
+  --border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+ion-button[fill='clear'] {
+  --background-hover: transparent;
+}
+
+ion-input,
+ion-textarea {
+  --border-radius: var(--app-radius-sm);
+}
+
+ion-searchbar {
+  --background: var(--app-surface-2);
+  --border-radius: 14px;
+  --box-shadow: none;
+  --color: var(--app-text);
+  --icon-color: var(--app-muted);
+  --placeholder-color: var(--app-muted);
+}
+
+ion-segment {
+  --background: var(--app-surface-2);
+  border-radius: var(--app-radius-sm);
+}
+
+ion-segment-button {
+  --border-radius: 9px;
+  font-weight: 600;
+  letter-spacing: 0;
+  min-height: 36px;
+  text-transform: none;
+}
+
+ion-tab-bar {
+  --background: var(--app-surface);
+  border-top: 1px solid var(--app-border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+ion-tab-button {
+  --color: var(--app-muted);
+  --color-selected: var(--ion-color-primary);
+  font-weight: 500;
+}
+
+ion-tab-button ion-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+ion-badge {
+  font-weight: 600;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+app-publicacion-card {
+  animation: aparecer 0.35s ease both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+.aparecer {
+  animation: aparecer 0.35s ease both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 ion-router-outlet {
   pointer-events: none;
 }
