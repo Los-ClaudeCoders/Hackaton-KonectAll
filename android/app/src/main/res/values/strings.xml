@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KonectAll</string>
+    <string name="title_activity_main">KonectAll</string>
+    <string name="package_name">pe.konectall.app</string>
+    <string name="custom_url_scheme">pe.konectall.app</string>
+</resources>

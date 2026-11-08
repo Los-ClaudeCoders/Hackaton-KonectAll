@@ -1,0 +1,7 @@
+{
+  "name": "KonectAll",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
