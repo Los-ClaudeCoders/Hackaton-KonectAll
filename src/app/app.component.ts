@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular';
 
+import { TemaService } from './core/tema.service';
 import { transicionPagina } from './shared/animaciones';
 
 @Component({
@@ -10,4 +11,8 @@ import { transicionPagina } from './shared/animaciones';
 })
 export class AppComponent {
   readonly transicionPagina = transicionPagina;
+
+  constructor() {
+    inject(TemaService);
+  }
 }

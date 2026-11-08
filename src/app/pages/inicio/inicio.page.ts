@@ -26,14 +26,18 @@ import { addIcons } from 'ionicons';
 import {
   alertCircleOutline,
   constructOutline,
+  contrastOutline,
   ellipsisHorizontal,
+  moonOutline,
   peopleOutline,
+  sunnyOutline,
   swapHorizontalOutline,
 } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth.service';
 import type { Publicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
+import { TemaService } from '../../core/tema.service';
 import { UiService } from '../../core/ui.service';
 import { EsqueletoListadoComponent } from '../../shared/ui/esqueleto-listado.component';
 import { EstadoVacioComponent } from '../../shared/ui/estado-vacio.component';
@@ -73,6 +77,9 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
           @if (!auth.usuario()) {
             <ion-button (click)="ir('/login')">Entrar</ion-button>
           }
+          <ion-button (click)="abrirTema()" [attr.aria-label]="'Tema: ' + tema.modo()">
+            <ion-icon slot="icon-only" [name]="iconoTema()"></ion-icon>
+          </ion-button>
           <ion-button (click)="abrirMas()" aria-label="Más secciones">
             <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
           </ion-button>
@@ -318,9 +325,21 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
 export class InicioPage {
   readonly auth = inject(AuthService);
   readonly pubs = inject(PublicacionesService);
+  readonly tema = inject(TemaService);
   private router = inject(Router);
   private sheet = inject(ActionSheetController);
   private ui = inject(UiService);
+
+  readonly iconoTema = computed(() => {
+    switch (this.tema.modo()) {
+      case 'claro':
+        return 'sunny-outline';
+      case 'oscuro':
+        return 'moon-outline';
+      default:
+        return 'contrast-outline';
+    }
+  });
 
   readonly enLinea = signal(navigator.onLine);
   readonly busqueda = signal('');
@@ -348,9 +367,35 @@ export class InicioPage {
   });
 
   constructor() {
-    addIcons({ constructOutline, swapHorizontalOutline, alertCircleOutline, peopleOutline, ellipsisHorizontal });
+    addIcons({
+      alertCircleOutline,
+      constructOutline,
+      contrastOutline,
+      ellipsisHorizontal,
+      moonOutline,
+      peopleOutline,
+      sunnyOutline,
+      swapHorizontalOutline,
+    });
     window.addEventListener('online', () => this.enLinea.set(true));
     window.addEventListener('offline', () => this.enLinea.set(false));
+  }
+
+  async abrirTema(): Promise<void> {
+    const sheet = await this.sheet.create({
+      header: 'Apariencia',
+      buttons: [
+        { text: 'Claro', icon: 'sunny-outline', handler: () => this.tema.cambiar('claro') },
+        { text: 'Oscuro', icon: 'moon-outline', handler: () => this.tema.cambiar('oscuro') },
+        {
+          text: 'Según el sistema',
+          icon: 'contrast-outline',
+          handler: () => this.tema.cambiar('sistema'),
+        },
+        { text: 'Cancelar', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
   }
 
   async ionViewWillEnter(): Promise<void> {

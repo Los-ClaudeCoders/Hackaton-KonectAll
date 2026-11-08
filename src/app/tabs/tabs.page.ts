@@ -48,16 +48,10 @@ import { MensajesService } from '../core/mensajes.service';
     `
       ion-tab-button.tab-publicar ion-icon {
         background: var(--ion-color-primary);
-        border-radius: 50%;
         box-shadow: 0 6px 14px rgba(28, 95, 214, 0.35);
-        box-sizing: border-box;
         color: var(--ion-color-primary-contrast);
-        font-size: 20px;
-        height: 44px;
-        margin: -10px 0;
-        padding: 10px;
-        transform: translateY(-10px);
-        width: 44px;
+        font-size: 22px;
+        padding: 9px;
       }
     `,
   ],

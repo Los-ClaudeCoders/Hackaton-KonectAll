@@ -8,6 +8,9 @@ import {
   IonContent,
   IonHeader,
   IonInput,
+  IonLabel,
+  IonSegment,
+  IonSegmentButton,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -17,6 +20,7 @@ import type { Publicacion } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { SupabaseService } from '../../core/supabase.service';
+import { TemaService } from '../../core/tema.service';
 import { UiService } from '../../core/ui.service';
 import { mensajeError } from '../../shared/errores.util';
 import { normalizarTelefono } from '../../shared/telefono.util';
@@ -37,6 +41,9 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
     IonChip,
     IonButton,
     IonInput,
+    IonLabel,
+    IonSegment,
+    IonSegmentButton,
     AvatarComponent,
     PublicacionCardComponent,
     EstadoVacioComponent,
@@ -118,6 +125,17 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
           <span>Intercambios</span>
         </div>
       </div>
+
+      <ion-card>
+        <ion-card-content>
+          <strong>Apariencia</strong>
+          <ion-segment class="tema" [value]="tema.modo()" (ionChange)="tema.cambiar($any($event).detail.value)">
+            <ion-segment-button value="sistema"><ion-label>Sistema</ion-label></ion-segment-button>
+            <ion-segment-button value="claro"><ion-label>Claro</ion-label></ion-segment-button>
+            <ion-segment-button value="oscuro"><ion-label>Oscuro</ion-label></ion-segment-button>
+          </ion-segment>
+        </ion-card-content>
+      </ion-card>
 
       <ion-card>
         <ion-card-content>
@@ -219,12 +237,16 @@ import { PublicacionCardComponent } from '../../shared/ui/publicacion-card.compo
       .campo {
         margin-top: 12px;
       }
+      .tema {
+        margin-top: 12px;
+      }
     `,
   ],
 })
 export class PerfilPage {
   readonly auth = inject(AuthService);
   readonly notificaciones = inject(NotificacionesService);
+  readonly tema = inject(TemaService);
   private pubs = inject(PublicacionesService);
   private sb = inject(SupabaseService);
   private ui = inject(UiService);
