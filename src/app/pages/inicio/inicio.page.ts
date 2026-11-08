@@ -6,10 +6,6 @@ import {
   IonButtons,
   IonCard,
   IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonChip,
   IonCol,
   IonContent,
   IonGrid,
@@ -22,7 +18,6 @@ import {
   IonSearchbar,
   IonSegment,
   IonSegmentButton,
-  IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -40,12 +35,17 @@ import { AuthService } from '../../core/auth.service';
 import type { Publicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { UiService } from '../../core/ui.service';
-import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util';
+import { EstadoVacioComponent } from '../../shared/estado-vacio/estado-vacio.component';
+import { SkeletonTarjetasComponent } from '../../shared/skeleton-tarjetas/skeleton-tarjetas.component';
+import { TarjetaPublicacionComponent } from '../../shared/tarjeta-publicacion/tarjeta-publicacion.component';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
   imports: [
+    TarjetaPublicacionComponent,
+    SkeletonTarjetasComponent,
+    EstadoVacioComponent,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -56,13 +56,8 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
     IonRow,
     IonCol,
     IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
     IonCardContent,
-    IonChip,
     IonIcon,
-    IonSpinner,
     IonSearchbar,
     IonSegment,
     IonSegmentButton,
@@ -165,36 +160,27 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
       <h2 class="titulo-seccion">Cerca de ti</h2>
 
       @if (pubs.cargando() && pubs.publicaciones().length === 0) {
-        <div class="centrado"><ion-spinner></ion-spinner></div>
+        <app-skeleton-tarjetas></app-skeleton-tarjetas>
       }
 
       @for (p of resultados().slice(0, 20); track p.id) {
-        <ion-card button (click)="ver(p)">
-          <ion-card-header>
-            <ion-card-subtitle>
-              {{ p.perfiles?.nombre ?? 'Vecino' }} · {{ p.distanciaKm?.toFixed(1) ?? '?' }} km
-            </ion-card-subtitle>
-            <ion-card-title>{{ p.titulo }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-chip [color]="colorTipo(p.tipo)" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
-            <ion-chip color="medium" outline>{{ textoPrecio(p.precio) }}</ion-chip>
-            @if (p.urgente || p.modo === 'emergencia') {
-              <ion-chip color="danger" outline>Urgente</ion-chip>
-            }
-          </ion-card-content>
-        </ion-card>
+        <app-tarjeta-publicacion [publicacion]="p" (abrir)="ver($event)"></app-tarjeta-publicacion>
       } @empty {
         @if (!pubs.cargando()) {
-          <ion-card>
-            <ion-card-content>
-              @if (busqueda() || radio() > 0) {
-                No encontramos publicaciones con ese filtro.
-              } @else {
-                Aún no hay publicaciones cercanas. ¡Sé el primero en publicar!
-              }
-            </ion-card-content>
-          </ion-card>
+          @if (busqueda() || radio() > 0) {
+            <app-estado-vacio
+              titulo="Sin resultados"
+              detalle="No encontramos publicaciones con ese filtro."
+            ></app-estado-vacio>
+          } @else {
+            <app-estado-vacio
+              icono="people-outline"
+              titulo="Aún no hay publicaciones cercanas"
+              detalle="¡Sé el primero en publicar!"
+              accion="Publicar"
+              (accionPulsada)="ir('/tabs/publicar')"
+            ></app-estado-vacio>
+          }
         }
       }
     </ion-content>
@@ -204,10 +190,6 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
       .titulo-seccion {
         margin: 20px 0 8px;
         font-weight: 600;
-      }
-      .centrado {
-        text-align: center;
-        padding: 24px;
       }
       ion-card h2 {
         font-size: 1rem;
@@ -228,10 +210,6 @@ export class InicioPage {
   private router = inject(Router);
   private sheet = inject(ActionSheetController);
   private ui = inject(UiService);
-
-  readonly colorTipo = colorTipo;
-  readonly etiquetaTipo = etiquetaTipo;
-  readonly textoPrecio = textoPrecio;
 
   readonly enLinea = signal(navigator.onLine);
   readonly busqueda = signal('');

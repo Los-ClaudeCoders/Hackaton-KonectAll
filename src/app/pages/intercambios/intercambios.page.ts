@@ -3,12 +3,6 @@ import { Router } from '@angular/router';
 import {
   IonBackButton,
   IonButtons,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonChip,
   IonContent,
   IonHeader,
   IonLabel,
@@ -17,7 +11,6 @@ import {
   IonSearchbar,
   IonSegment,
   IonSegmentButton,
-  IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -26,12 +19,17 @@ import type { RefresherCustomEvent } from '@ionic/angular';
 import type { Publicacion, TipoPublicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { UiService } from '../../core/ui.service';
-import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util';
+import { EstadoVacioComponent } from '../../shared/estado-vacio/estado-vacio.component';
+import { SkeletonTarjetasComponent } from '../../shared/skeleton-tarjetas/skeleton-tarjetas.component';
+import { TarjetaPublicacionComponent } from '../../shared/tarjeta-publicacion/tarjeta-publicacion.component';
 
 @Component({
   selector: 'app-intercambios',
   standalone: true,
   imports: [
+    TarjetaPublicacionComponent,
+    SkeletonTarjetasComponent,
+    EstadoVacioComponent,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -41,13 +39,6 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
     IonSegment,
     IonSegmentButton,
     IonLabel,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonCardContent,
-    IonChip,
-    IonSpinner,
     IonSearchbar,
     IonRefresher,
     IonRefresherContent,
@@ -82,25 +73,20 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
       </ion-segment>
 
       @if (pubs.cargando() && lista().length === 0) {
-        <div class="centrado"><ion-spinner></ion-spinner></div>
+        <app-skeleton-tarjetas></app-skeleton-tarjetas>
       }
 
       @for (p of lista(); track p.id) {
-        <ion-card button (click)="ver(p)">
-          <ion-card-header>
-            <ion-card-subtitle>
-              {{ p.perfiles?.nombre ?? 'Vecino' }} · {{ p.distanciaKm?.toFixed(1) ?? '?' }} km
-            </ion-card-subtitle>
-            <ion-card-title>{{ p.titulo }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-chip [color]="colorTipo(p.tipo)" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
-            <ion-chip color="medium" outline>{{ textoPrecio(p.precio) }}</ion-chip>
-          </ion-card-content>
-        </ion-card>
+        <app-tarjeta-publicacion [publicacion]="p" (abrir)="ver($event)"></app-tarjeta-publicacion>
       } @empty {
         @if (!pubs.cargando()) {
-          <p class="vacio">No hay intercambios en este filtro.</p>
+          <app-estado-vacio
+            icono="swap-horizontal-outline"
+            titulo="Aún no hay intercambios"
+            detalle="Ofrece algo a cambio y conecta con tus vecinos."
+            accion="Publicar intercambio"
+            (accionPulsada)="publicar()"
+          ></app-estado-vacio>
         }
       }
     </ion-content>
@@ -110,15 +96,6 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
       .segmento {
         padding: 8px;
       }
-      .centrado {
-        text-align: center;
-        padding: 24px;
-      }
-      .vacio {
-        text-align: center;
-        color: var(--ion-color-medium);
-        padding: 24px;
-      }
     `,
   ],
 })
@@ -126,10 +103,6 @@ export class IntercambiosPage {
   readonly pubs = inject(PublicacionesService);
   private ui = inject(UiService);
   private router = inject(Router);
-
-  readonly colorTipo = colorTipo;
-  readonly etiquetaTipo = etiquetaTipo;
-  readonly textoPrecio = textoPrecio;
 
   readonly filtro = signal<TipoPublicacion>('intercambio');
   readonly busqueda = signal('');
@@ -162,6 +135,10 @@ export class IntercambiosPage {
     } finally {
       await evento.target.complete();
     }
+  }
+
+  publicar(): void {
+    void this.router.navigateByUrl('/tabs/publicar');
   }
 
   ver(p: Publicacion): void {

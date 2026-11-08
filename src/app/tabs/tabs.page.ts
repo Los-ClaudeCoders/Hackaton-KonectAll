@@ -33,7 +33,7 @@ import { MensajesService } from '../core/mensajes.service';
           <ion-icon name="chatbubbles-outline"></ion-icon>
           <ion-label>Chat</ion-label>
           @if (mensajes.noLeidos() > 0) {
-            <ion-badge color="danger">{{ mensajes.noLeidos() }}</ion-badge>
+            <ion-badge color="danger" aria-label="Mensajes sin leer">{{ mensajes.noLeidos() }}</ion-badge>
           }
         </ion-tab-button>
 
@@ -44,6 +44,26 @@ import { MensajesService } from '../core/mensajes.service';
       </ion-tab-bar>
     </ion-tabs>
   `,
+  styles: [
+    `
+      ion-tab-bar {
+        overflow: visible;
+      }
+      ion-tab-button[tab='publicar'] ion-icon {
+        font-size: 30px;
+        color: #fff;
+        background: var(--ion-color-primary);
+        border-radius: 50%;
+        padding: 10px;
+        margin-top: -22px;
+        box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.45);
+      }
+      ion-tab-button[tab='publicar'] ion-label {
+        font-weight: 700;
+        color: var(--ion-color-primary);
+      }
+    `,
+  ],
 })
 export class TabsPage {
   readonly mensajes = inject(MensajesService);

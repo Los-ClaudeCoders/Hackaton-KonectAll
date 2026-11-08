@@ -3,12 +3,6 @@ import { Router } from '@angular/router';
 import {
   IonBackButton,
   IonButtons,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonChip,
   IonContent,
   IonHeader,
   IonLabel,
@@ -17,7 +11,6 @@ import {
   IonSearchbar,
   IonSegment,
   IonSegmentButton,
-  IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
@@ -26,12 +19,17 @@ import type { RefresherCustomEvent } from '@ionic/angular';
 import type { Publicacion } from '../../core/models';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { UiService } from '../../core/ui.service';
-import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util';
+import { EstadoVacioComponent } from '../../shared/estado-vacio/estado-vacio.component';
+import { SkeletonTarjetasComponent } from '../../shared/skeleton-tarjetas/skeleton-tarjetas.component';
+import { TarjetaPublicacionComponent } from '../../shared/tarjeta-publicacion/tarjeta-publicacion.component';
 
 @Component({
   selector: 'app-servicios',
   standalone: true,
   imports: [
+    TarjetaPublicacionComponent,
+    SkeletonTarjetasComponent,
+    EstadoVacioComponent,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -41,13 +39,6 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
     IonSegment,
     IonSegmentButton,
     IonLabel,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonCardContent,
-    IonChip,
-    IonSpinner,
     IonSearchbar,
     IonRefresher,
     IonRefresherContent,
@@ -80,28 +71,20 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
       </ion-segment>
 
       @if (pubs.cargando() && lista().length === 0) {
-        <div class="centrado"><ion-spinner></ion-spinner></div>
+        <app-skeleton-tarjetas></app-skeleton-tarjetas>
       }
 
       @for (p of lista(); track p.id) {
-        <ion-card button (click)="ver(p)">
-          <ion-card-header>
-            <ion-card-subtitle>
-              {{ p.perfiles?.nombre ?? 'Vecino' }} · {{ p.distanciaKm?.toFixed(1) ?? '?' }} km
-            </ion-card-subtitle>
-            <ion-card-title>{{ p.titulo }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-chip [color]="colorTipo(p.tipo)" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
-            <ion-chip color="medium" outline>{{ textoPrecio(p.precio) }}</ion-chip>
-            @if (p.urgente) {
-              <ion-chip color="danger" outline>Urgente</ion-chip>
-            }
-          </ion-card-content>
-        </ion-card>
+        <app-tarjeta-publicacion [publicacion]="p" (abrir)="ver($event)"></app-tarjeta-publicacion>
       } @empty {
         @if (!pubs.cargando()) {
-          <p class="vacio">No hay servicios ni productos en este filtro.</p>
+          <app-estado-vacio
+            icono="construct-outline"
+            titulo="No hay servicios ni productos aquí"
+            detalle="Prueba otro filtro o publica el primero."
+            accion="Publicar"
+            (accionPulsada)="publicar()"
+          ></app-estado-vacio>
         }
       }
     </ion-content>
@@ -111,15 +94,6 @@ import { colorTipo, etiquetaTipo, textoPrecio } from '../../shared/catalogo.util
       .segmento {
         padding: 8px;
       }
-      .centrado {
-        text-align: center;
-        padding: 24px;
-      }
-      .vacio {
-        text-align: center;
-        color: var(--ion-color-medium);
-        padding: 24px;
-      }
     `,
   ],
 })
@@ -127,10 +101,6 @@ export class ServiciosPage {
   readonly pubs = inject(PublicacionesService);
   private ui = inject(UiService);
   private router = inject(Router);
-
-  readonly colorTipo = colorTipo;
-  readonly etiquetaTipo = etiquetaTipo;
-  readonly textoPrecio = textoPrecio;
 
   readonly filtro = signal<'todos' | 'servicio' | 'producto'>('todos');
   readonly busqueda = signal('');
@@ -164,6 +134,10 @@ export class ServiciosPage {
     } finally {
       await evento.target.complete();
     }
+  }
+
+  publicar(): void {
+    void this.router.navigateByUrl('/tabs/publicar');
   }
 
   ver(p: Publicacion): void {

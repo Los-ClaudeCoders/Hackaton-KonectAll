@@ -1,2 +1,111 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// Tema de marca KonectAll.
+// Más información: https://ionicframework.com/docs/theming/
+
+:root {
+  --ion-font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  // Primario: azul del logo
+  --ion-color-primary: #1e60d8;
+  --ion-color-primary-rgb: 30, 96, 216;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #1a55bf;
+  --ion-color-primary-tint: #3570dd;
+
+  // Secundario: turquesa
+  --ion-color-secondary: #0f9fa8;
+  --ion-color-secondary-rgb: 15, 159, 168;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #0d8c94;
+  --ion-color-secondary-tint: #27a9b1;
+
+  // Terciario: violeta (intercambios)
+  --ion-color-tertiary: #7044ff;
+  --ion-color-tertiary-rgb: 112, 68, 255;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #623ce0;
+  --ion-color-tertiary-tint: #7e57ff;
+
+  // Éxito: verde
+  --ion-color-success: #1f9d55;
+  --ion-color-success-rgb: 31, 157, 85;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #1b8a4b;
+  --ion-color-success-tint: #35a766;
+
+  // Advertencia: ámbar
+  --ion-color-warning: #ffb020;
+  --ion-color-warning-rgb: 255, 176, 32;
+  --ion-color-warning-contrast: #1f1500;
+  --ion-color-warning-contrast-rgb: 31, 21, 0;
+  --ion-color-warning-shade: #e09b1c;
+  --ion-color-warning-tint: #ffb836;
+
+  // Peligro / emergencia: rojo
+  --ion-color-danger: #d92d3a;
+  --ion-color-danger-rgb: 217, 45, 58;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #bf2833;
+  --ion-color-danger-tint: #dd424e;
+
+  --ion-background-color: #f4f6fb;
+  --ion-background-color-rgb: 244, 246, 251;
+  --ion-card-background: #ffffff;
+
+  // Tokens propios
+  --konect-radius: 16px;
+  --konect-shadow: 0 2px 10px rgba(20, 40, 90, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: #0f1420;
+    --ion-background-color-rgb: 15, 20, 32;
+    --ion-card-background: #1a2132;
+    --ion-color-primary: #5b8def;
+    --ion-color-primary-rgb: 91, 141, 239;
+    --ion-color-primary-shade: #507cd2;
+    --ion-color-primary-tint: #6c98f1;
+    --konect-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  }
+}
+
+ion-toolbar {
+  --background: var(--ion-color-primary);
+  --color: #ffffff;
+}
+
+ion-title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+ion-card {
+  border-radius: var(--konect-radius);
+  box-shadow: var(--konect-shadow);
+  margin-inline: 0;
+  margin-block: 0 12px;
+}
+
+ion-chip {
+  font-weight: 600;
+}
+
+ion-button {
+  --border-radius: 12px;
+  text-transform: none;
+  font-weight: 600;
+}
+
+ion-tab-bar {
+  --border: none;
+  box-shadow: 0 -2px 12px rgba(20, 40, 90, 0.08);
+}
+
+ion-tab-button {
+  --color-selected: var(--ion-color-primary);
+}
