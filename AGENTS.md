@@ -25,11 +25,13 @@ KonectAll: Ionic 9 + Angular 22 standalone (Capacitor 8) para una red vecinal de
 ## Architecture
 
 - Bootstrap `src/main.ts`; rutas lazy en `src/app/app.routes.ts`. Todo standalone.
-- `core/`: `SupabaseService`, `AuthService` (signals), `PublicacionesService` (signals + Realtime + caché localStorage), `MensajesService` (chat, no leídos, Realtime), `ModeracionService` (denuncias/bloqueos), `authGuard`, `UiService`, `models.ts`.
+- `core/`: `SupabaseService`, `AuthService` (signals), `PublicacionesService` (signals + Realtime + caché localStorage), `MensajesService` (chat, no leídos, Realtime), `ModeracionService` (denuncias/bloqueos), `NotificacionesService` (push nativo FCM), `authGuard`, `UiService`, `models.ts`.
 - `pages/`: inicio, mapa (Leaflet en `ionViewDidEnter`), publicar (crear/editar, foto comprimida, geocoding), detalle, chat, conversación, perfil, comunidad, servicios, intercambios, emergencia, login, bienvenida.
 - `shared/`: distancia/geolocalización (fallback Arequipa), `geocodificar` (Nominatim), `telefono`, `errores`, catálogo, contactos WhatsApp, conversaciones.
-- Tablas: `perfiles`, `publicaciones`, `recomendaciones`, `mensajes`, `denuncias`, `bloqueos`; view-free; RPC `telefono_de`; Storage bucket `fotos`.
+- Tablas: `perfiles`, `publicaciones`, `recomendaciones`, `mensajes`, `denuncias`, `bloqueos`, `push_tokens`; RPC `telefono_de`; Storage bucket `fotos`; Edge Function `supabase/functions/aviso-push` + triggers `pg_net`.
 - Realtime: `publicaciones`, `recomendaciones`, `mensajes`. Canales por página se detienen al salir.
+- Despliegue: `netlify.toml` (build + SPA fallback) y `src/_redirects`. Nativo: `assets/logo.png` es la fuente de `@capacitor/assets`.
+- Push solo en nativo: `google-services.json` va en `android/app/`; el service account FCM vive en un secreto de Supabase, nunca en el repo.
 
 ## Conventions and gotchas
 

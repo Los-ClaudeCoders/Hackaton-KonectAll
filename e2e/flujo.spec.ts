@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 
 const PASSWORD = 'E2eDemo123!';
-const BASE = 'http://localhost:4200';
+const BASE = process.env['E2E_BASE_URL'] ?? 'http://localhost:4200';
 
 const opcionesContexto = {
   baseURL: BASE,

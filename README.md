@@ -76,18 +76,20 @@ npx cap open ios       # solo en macOS
 ## Notificaciones push (Android/FCM)
 
 1. Crea el proyecto en Firebase y una app Android con paquete `pe.konectall.app`.
-2. Descarga `google-services.json` y colócalo en `android/app/`.
-3. Genera una clave de servicio (Service accounts → Generate new private key) y guárdala fuera del repo.
+2. Descarga `google-services.json` y colócalo en `android/app/` (el proyecto Android ya lo detecta).
+3. Genera una clave de servicio (Service accounts → Generate new private key) y guárdala **fuera del repo**.
 4. Despliega la función y configura el secreto:
 
-```bash
+```powershell
 npx supabase login
 npx supabase link --project-ref rtmsgsmwyhahkrkxahog
 npx supabase functions deploy aviso-push
-npx supabase secrets set FCM_SERVICE_ACCOUNT="$(cat ruta/al/serviceAccount.json)"
+npx supabase secrets set "FCM_SERVICE_ACCOUNT=$(Get-Content -Raw .\ruta\al\serviceAccount.json)"
 ```
 
-El botón “Activar notificaciones” está en Mi perfil (solo en la app instalada).
+También puedes pegar el JSON del service account en el dashboard: Project Settings → Edge Functions → Secrets.
+
+Los triggers de `schema.sql` avisan a la Edge Function al recibir mensajes y al publicar una emergencia. El botón “Activar notificaciones” está en Mi perfil (solo en la app instalada).
 
 ## Pruebas e2e
 

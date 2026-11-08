@@ -14,6 +14,7 @@ import {
 
 import { AuthService } from '../../core/auth.service';
 import type { Publicacion } from '../../core/models';
+import { NotificacionesService } from '../../core/notificaciones.service';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { SupabaseService } from '../../core/supabase.service';
 import { UiService } from '../../core/ui.service';
@@ -85,6 +86,20 @@ import { normalizarTelefono } from '../../shared/telefono.util';
         </ion-card-content>
       </ion-card>
 
+      <ion-card>
+        <ion-card-content>
+          <strong>Notificaciones</strong>
+          <p>Recibe avisos de mensajes y emergencias.</p>
+          @if (notificaciones.disponible) {
+            <ion-button expand="block" fill="outline" (click)="activarNotificaciones()">
+              {{ notificaciones.activas() ? 'Notificaciones activas' : 'Activar notificaciones' }}
+            </ion-button>
+          } @else {
+            <p class="dato">Disponible en la app Android/iOS instalada.</p>
+          }
+        </ion-card-content>
+      </ion-card>
+
       @for (p of misPublicaciones(); track p.id) {
         <ion-card>
           <ion-card-content>
@@ -131,6 +146,7 @@ import { normalizarTelefono } from '../../shared/telefono.util';
 })
 export class PerfilPage {
   readonly auth = inject(AuthService);
+  readonly notificaciones = inject(NotificacionesService);
   private pubs = inject(PublicacionesService);
   private sb = inject(SupabaseService);
   private ui = inject(UiService);
@@ -160,6 +176,7 @@ export class PerfilPage {
     } catch {
       await this.ui.aviso('No se pudo cargar tu perfil', 'danger');
     }
+    void this.notificaciones.registrarSiPermitido();
   }
 
   nombre(): string {
@@ -244,11 +261,16 @@ export class PerfilPage {
     }
   }
 
+  async activarNotificaciones(): Promise<void> {
+    await this.notificaciones.activar();
+  }
+
   tutorial(): void {
     void this.router.navigate(['/bienvenida'], { queryParams: { repaso: 1 } });
   }
 
   async salir(): Promise<void> {
+    await this.notificaciones.desactivar();
     await this.auth.salir();
     await this.router.navigateByUrl('/tabs/inicio');
   }

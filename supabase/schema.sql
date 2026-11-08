@@ -136,6 +136,20 @@ create table if not exists public.bloqueos (
 create index if not exists bloqueos_bloqueante_idx on public.bloqueos (bloqueante_id);
 
 -- ─────────────────────────────────────────────────────────────
+-- 3d. Tokens de notificaciones push (Android/iOS)
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.push_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.perfiles(id) on delete cascade,
+  token text not null unique,
+  plataforma text not null default 'android',
+  creado_en timestamptz not null default now(),
+  actualizado_en timestamptz not null default now()
+);
+
+create index if not exists push_tokens_user_idx on public.push_tokens (user_id);
+
+-- ─────────────────────────────────────────────────────────────
 -- 4. Trigger: crear perfil al registrarse
 -- ─────────────────────────────────────────────────────────────
 create or replace function public.crear_perfil_nuevo()
@@ -174,6 +188,7 @@ alter table public.recomendaciones enable row level security;
 alter table public.mensajes enable row level security;
 alter table public.denuncias enable row level security;
 alter table public.bloqueos enable row level security;
+alter table public.push_tokens enable row level security;
 
 drop policy if exists "perfiles lectura" on public.perfiles;
 create policy "perfiles lectura" on public.perfiles
@@ -268,6 +283,22 @@ drop policy if exists "bloqueos delete propia" on public.bloqueos;
 create policy "bloqueos delete propia" on public.bloqueos
   for delete to authenticated using (auth.uid() = bloqueante_id);
 
+drop policy if exists "push_tokens insert propio" on public.push_tokens;
+create policy "push_tokens insert propio" on public.push_tokens
+  for insert to authenticated with check (auth.uid() = user_id);
+
+drop policy if exists "push_tokens update propio" on public.push_tokens;
+create policy "push_tokens update propio" on public.push_tokens
+  for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "push_tokens select propio" on public.push_tokens;
+create policy "push_tokens select propio" on public.push_tokens
+  for select to authenticated using (auth.uid() = user_id);
+
+drop policy if exists "push_tokens delete propio" on public.push_tokens;
+create policy "push_tokens delete propio" on public.push_tokens
+  for delete to authenticated using (auth.uid() = user_id);
+
 -- ─────────────────────────────────────────────────────────────
 -- 6. Realtime
 -- ─────────────────────────────────────────────────────────────
@@ -328,5 +359,67 @@ as $$
 $$;
 
 grant execute on function public.telefono_de(uuid) to anon, authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- 9. Notificaciones push: pg_net + triggers
+-- ─────────────────────────────────────────────────────────────
+create extension if not exists pg_net;
+
+create or replace function public.avisar_push()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  url_funcion text := 'https://rtmsgsmwyhahkrkxahog.supabase.co/functions/v1/aviso-push';
+  clave_publica text := 'sb_publishable_m1-vpBa4u_kUBkYyBXZcqw_SCg8UzhI';
+  cuerpo jsonb;
+begin
+  begin
+    if tg_table_name = 'mensajes' then
+      cuerpo := jsonb_build_object(
+        'tipo', 'mensaje',
+        'user_id', new.receptor_id,
+        'titulo', 'Nuevo mensaje',
+        'cuerpo', 'Tienes un mensaje nuevo en KonectAll',
+        'url', '/tabs/chat'
+      );
+    elsif tg_table_name = 'publicaciones' and new.modo = 'emergencia' then
+      cuerpo := jsonb_build_object(
+        'tipo', 'emergencia',
+        'excluir_user_id', new.autor_id,
+        'titulo', 'Emergencia cerca',
+        'cuerpo', new.titulo,
+        'url', '/tabs/emergencia'
+      );
+    else
+      return new;
+    end if;
+
+    perform net.http_post(
+      url := url_funcion,
+      body := cuerpo,
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || clave_publica
+      )
+    );
+  exception when others then
+    null;
+  end;
+  return new;
+end;
+$$;
+
+drop trigger if exists aviso_push_mensaje on public.mensajes;
+create trigger aviso_push_mensaje
+  after insert on public.mensajes
+  for each row execute function public.avisar_push();
+
+drop trigger if exists aviso_push_emergencia on public.publicaciones;
+create trigger aviso_push_emergencia
+  after insert on public.publicaciones
+  for each row execute function public.avisar_push();
 
 notify pgrst, 'reload schema';
