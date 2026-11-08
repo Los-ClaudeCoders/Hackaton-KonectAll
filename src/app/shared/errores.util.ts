@@ -6,6 +6,14 @@ interface Traduccion {
 const TRADUCCIONES: Traduccion[] = [
   { patron: /invalid login credentials/i, mensaje: 'Correo o contraseña incorrectos' },
   { patron: /email not confirmed/i, mensaje: 'Confirma tu correo antes de ingresar' },
+  {
+    patron: /email logins are disabled/i,
+    mensaje: 'El inicio de sesión por correo está deshabilitado en Supabase.',
+  },
+  {
+    patron: /email signups are disabled/i,
+    mensaje: 'El registro por correo está deshabilitado en Supabase.',
+  },
   { patron: /user already registered/i, mensaje: 'Ese correo ya tiene una cuenta' },
   { patron: /password should be at least/i, mensaje: 'La contraseña debe tener al menos 6 caracteres' },
   { patron: /for security purposes/i, mensaje: 'Espera unos segundos antes de reintentar' },
