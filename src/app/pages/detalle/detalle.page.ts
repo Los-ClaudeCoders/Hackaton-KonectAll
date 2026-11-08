@@ -29,6 +29,7 @@ import {
   logoWhatsapp,
   personRemoveOutline,
   pricetagOutline,
+  shareSocialOutline,
   swapHorizontalOutline,
   thumbsUpOutline,
 } from 'ionicons/icons';
@@ -40,14 +41,13 @@ import { PublicacionesService } from '../../core/publicaciones.service';
 import { SupabaseService } from '../../core/supabase.service';
 import { UiService } from '../../core/ui.service';
 import {
-  colorTipo,
   etiquetaCategoria,
   etiquetaEstado,
   etiquetaTipo,
   textoPrecio,
   visualPublicacion,
 } from '../../shared/catalogo.util';
-import { abrirWhatsApp } from '../../shared/contacto.util';
+import { abrirWhatsApp, compartirPorWhatsApp } from '../../shared/contacto.util';
 import { guardarContacto } from '../../shared/contactos.util';
 import { AvatarComponent } from '../../shared/ui/avatar.component';
 
@@ -77,6 +77,13 @@ import { AvatarComponent } from '../../shared/ui/avatar.component';
           <ion-back-button defaultHref="/tabs/inicio"></ion-back-button>
         </ion-buttons>
         <ion-title>Publicación</ion-title>
+        @if (publicacion()) {
+          <ion-buttons slot="end">
+            <ion-button (click)="compartir()" aria-label="Compartir por WhatsApp">
+              <ion-icon slot="icon-only" name="share-social-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        }
       </ion-toolbar>
     </ion-header>
 
@@ -117,7 +124,7 @@ import { AvatarComponent } from '../../shared/ui/avatar.component';
           }
 
           <div class="chips">
-            <ion-chip [color]="colorTipo(p.tipo)" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
+            <ion-chip color="primary" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
             <ion-chip color="medium" outline>{{ etiquetaCategoria(p.categoria) }}</ion-chip>
             @if (p.modo === 'emergencia' || p.urgente) {
               <ion-chip color="danger" outline>Urgente</ion-chip>
@@ -314,27 +321,19 @@ import { AvatarComponent } from '../../shared/ui/avatar.component';
       .pie {
         --background: var(--app-surface);
         border-top: 1px solid var(--app-border);
-        padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
       }
       .acciones {
         display: grid;
-        gap: 10px;
+        gap: 8px;
         grid-template-columns: 1fr 1fr;
-        margin: 0 auto;
-        max-width: 560px;
       }
       .acciones ion-button {
-        font-size: 0.82rem;
+        font-size: 0.78rem;
         margin: 0;
-        min-height: 44px;
-      }
-      .acciones ion-icon {
-        font-size: 18px;
       }
       .acciones .principal {
-        font-size: 0.9rem;
         grid-column: 1 / -1;
-        min-height: 48px;
       }
     `,
   ],
@@ -350,7 +349,6 @@ export class DetallePage implements OnInit {
   private ui = inject(UiService);
   private router = inject(Router);
 
-  readonly colorTipo = colorTipo;
   readonly etiquetaTipo = etiquetaTipo;
   readonly etiquetaCategoria = etiquetaCategoria;
   readonly etiquetaEstado = etiquetaEstado;
@@ -385,6 +383,7 @@ export class DetallePage implements OnInit {
       locationOutline,
       logoWhatsapp,
       personRemoveOutline,
+      shareSocialOutline,
       pricetagOutline,
       swapHorizontalOutline,
       thumbsUpOutline,
@@ -485,6 +484,12 @@ export class DetallePage implements OnInit {
     } catch {
       await this.ui.aviso('Ya reportaste esta publicación', 'warning');
     }
+  }
+
+  compartir(): void {
+    const p = this.publicacion();
+    if (!p) return;
+    compartirPorWhatsApp(p.titulo, `${window.location.origin}/publicacion/${p.id}`);
   }
 
   async contactar(): Promise<void> {

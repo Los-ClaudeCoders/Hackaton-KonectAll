@@ -76,10 +76,6 @@ supabase/.temp/
 serviceAccount*.json
 *-firebase-adminsdk-*.json
 
-# Python
-__pycache__/
-*.pyc
-
 # System files
 .DS_Store
 Thumbs.db
