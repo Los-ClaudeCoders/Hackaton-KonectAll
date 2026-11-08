@@ -84,6 +84,11 @@ h4 {
   letter-spacing: -0.01em;
 }
 
+:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
 ion-content {
   --background: var(--app-bg);
 }

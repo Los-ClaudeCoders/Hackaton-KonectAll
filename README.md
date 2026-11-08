@@ -38,6 +38,16 @@ Red vecinal para ofrecer, encontrar e intercambiar productos y servicios cerca d
 | Deploy | Netlify (`netlify.toml`, `_redirects`, HTTPS) |
 | CLI | Supabase CLI 3.0 (link, deploy de functions, secrets) |
 
+## Diseño
+
+La interfaz se rediseñó tomando como referencia el mockup original de “Cerca” y manteniendo el azul de marca `#1c5fd6`.
+
+- **Tokens** en `src/theme/variables.scss`: rampa de color, colores por categoría (servicios, intercambios, emergencia, comunidad), superficies, bordes, radios y sombras; variantes para modo oscuro.
+- **Tipografía**: Poppins auto-almacenada en `src/assets/fonts` (woff2 + licencia OFL), con preload en `index.html`.
+- **Componentes compartidos** en `src/app/shared/ui`: tarjeta de publicación, avatar con iniciales, estado vacío y esqueleto de carga.
+- **Fluidez**: skeletons en listas, stagger de tarjetas y transición fade de páginas (`src/app/shared/animaciones.ts`), respetando `prefers-reduced-motion`.
+- **Accesibilidad**: foco visible, contraste en claro/oscuro, objetivos táctiles de Ionic y safe areas en tab bar/footers.
+
 ## Estructura
 
 - `src/app/core/`: `SupabaseService`, `AuthService`, `PublicacionesService`, `MensajesService`, `ModeracionService`, `NotificacionesService`, `authGuard`, `UiService`, modelos.
