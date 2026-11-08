@@ -11,12 +11,13 @@ Red vecinal para ofrecer, encontrar e intercambiar productos y servicios cerca d
 
 - **Inicio** con búsqueda por texto, filtro por radio (1/3/5 km), publicaciones cercanas ordenadas por distancia y banner de emergencias.
 - **Publicar en 3 toques**: ofrezco, necesito o intercambio; foto comprimida (máx. 5 MB), precio/gratis, urgente, dirección con geocoding y modo emergencia.
-- **Mapa** con Leaflet + OpenStreetMap: filtros, pines por tipo/emergencia, ubicación propia y tooltip con detalle.
+- **Mapa** con Leaflet + OpenStreetMap: filtros, pines con forma de gota, color e icono por tipo/categoría, ubicación propia con icono de persona y tooltip con detalle.
 - **Servicios y productos** e **Intercambios** con segmentos y buscador.
 - **Modo emergencia**: pedir/ofrecer ayuda, urgentes cerca y teléfonos 105/116/106/115.
 - **Chat real** por publicación: conversaciones, mensajes en tiempo real, badge de no leídos y aviso al recibir.
 - **Mi comunidad**: vecinos activos y publicaciones más recomendadas.
-- **Perfil**: edición de nombre/teléfono/barrio, edición/eliminación de publicaciones, tutorial y notificaciones.
+- **Perfil**: edición de nombre/teléfono/localidad con chip “Editando”, estado “Sin cambios”/“Cambios sin guardar” y guardado deshabilitado hasta modificar algo; edición/eliminación de publicaciones, tutorial y notificaciones.
+- **Detalle**: acciones principales centradas y con más aire respecto al borde (Contactar, Enviar mensaje y Recomendar).
 - **Visto Bueno Vecinal**: recomendaciones por publicación.
 - **Moderación**: reportar publicaciones/conversaciones, bloquear vecinos y límites anti-spam.
 - **PWA** instalable con service worker (offline del app shell) y caché de datos en localStorage.
@@ -42,7 +43,8 @@ Red vecinal para ofrecer, encontrar e intercambiar productos y servicios cerca d
 
 La interfaz se rediseñó tomando como referencia el mockup original de “Cerca” y manteniendo el azul de marca `#1c5fd6`.
 
-- **Tokens** en `src/theme/variables.scss`: rampa de color, colores por categoría (servicios, intercambios, emergencia, comunidad), superficies, bordes, radios y sombras; variantes para modo oscuro.
+- **Tokens** en `src/theme/variables.scss`: rampa de color, colores por categoría (servicios, intercambios, emergencia, comunidad), colores por tipo de publicación, superficies, bordes, radios y sombras; variantes para modo oscuro.
+- **Colores por tipo**: azul para **Ofrezco**, naranja para **Necesito** y verde azulado para **Intercambio**. Se aplican en chips, tarjetas, detalle y pines del mapa; `necesito` es un color Ionic propio (`.ion-color-necesito`).
 - **Tema**: selector claro / oscuro / según el sistema desde el botón del encabezado de Inicio y desde Mi perfil → Apariencia; se guarda en localStorage.
 - **Tipografía**: Poppins auto-almacenada en `src/assets/fonts` (woff2 + licencia OFL), con preload en `index.html`.
 - **Componentes compartidos** en `src/app/shared/ui`: tarjeta de publicación, avatar con iniciales, estado vacío y esqueleto de carga.
@@ -64,7 +66,7 @@ La interfaz se rediseñó tomando como referencia el mockup original de “Cerca
 
 | Tabla             | Uso                                                                                                       |
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `perfiles`        | Nombre, barrio y teléfono. El teléfono **no** se expone en listados; se obtiene con el RPC `telefono_de`. |
+| `perfiles`        | Nombre, localidad (campo `barrio`) y teléfono. El teléfono **no** se expone en listados; se obtiene con el RPC `telefono_de`. |
 | `publicaciones`   | Tipo, modo, categoría, título, descripción, dirección, foto, precio, urgente, coordenadas y estado.       |
 | `recomendaciones` | Un “Visto Bueno” por publicación y vecino.                                                                |
 | `mensajes`        | Chat por publicación: emisor, receptor, texto y `leido`.                                                  |
@@ -117,7 +119,7 @@ npx.cmd playwright test e2e/app.spec.ts
 
 ## Pruebas
 
-- **Unit:** 7 archivos / 15 tests (catálogo, comunidad, conversaciones, errores, teléfono, login y app).
+- **Unit:** 7 archivos / 18 tests (catálogo, comunidad, conversaciones, errores, teléfono, login y app).
 - **E2E:** 15 tests. `app.spec.ts` cubre bienvenida, mapa, búsqueda, rutas, detalle, privacidad y moderación; `flujo.spec.ts` registra dos vecinos y prueba editar perfil, publicar, recomendar, chatear, badge de no leídos, reportar, bloquear y eliminar.
 - El flujo autenticado crea **dos usuarios efímeros** por corrida (emails aleatorios) y requiere “Confirm email” desactivado. Los usuarios de Auth quedan en el proyecto; las publicaciones se eliminan al final.
 
@@ -208,10 +210,23 @@ El botón **Activar notificaciones** está en Mi perfil y solo aparece en la app
 | 404 al abrir una ruta directa                | Revisa `netlify.toml`/`src/_redirects` (fallback SPA).                                                |
 | “SDK location not found” al compilar Android | Abre `android/` en Android Studio una vez para que cree `local.properties`.                           |
 | Warning de Leaflet no ESM                    | Conocido; no afecta el build.                                                                         |
+| `42501 permission denied for table perfiles` al guardar el perfil | No usar `upsert` en `perfiles`: `ON CONFLICT` requiere SELECT sobre la tabla, revocado por RLS. Usar `update().eq('id', user.id)`. |
+| Los pines del mapa no muestran su icono       | Los estilos `.pin-mapa*` viven en `src/global.scss`; Leaflet inyecta HTML fuera de la encapsulación Angular. |
+
+## Trabajo reciente
+
+| Commit    | Cambio |
+| --------- | ------ |
+| `56c8ffa` | Detalle con acciones centradas y más grandes; mapa con pines con forma de gota, icono y color por tipo. |
+| `e3fbb62` | Colores diferenciados para Ofrezco (azul), Necesito (naranja) e Intercambio (verde azulado) en tarjetas, chips, detalle y mapa. |
+| `0e3b60e` | Perfil con estado de edición y “Cambios sin guardar”; textos de UI “Barrio” → “Localidad”. |
+| `eb4aea2` | Guardado de perfil con `update` (evita el 42501), mejores mensajes de error y prellenado del teléfono con `mi_telefono()`. |
+| `6162e91` | Contraste de segmentos en modo oscuro. |
+| `7da0d57` | Selector de tema y tab bar más alto. |
 
 ## Estado de la demo
 
-- Desplegado en Netlify y verificado con 14 tests de UI contra producción.
+- Desplegado en Netlify y verificado con 15 tests (14 de UI + flujo autenticado).
 - PWA con manifest, service worker y fallback SPA.
 - Backend Supabase con datos demo, RLS, chat, moderación y privacidad de teléfonos.
 - Push FCM verificado de extremo a extremo (token → función → envío).

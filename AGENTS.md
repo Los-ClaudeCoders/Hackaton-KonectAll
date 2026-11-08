@@ -18,17 +18,17 @@ KonectAll: Ionic 9 + Angular 22 standalone (Capacitor 8) para una red vecinal de
 ## Baseline (verificado)
 
 - Build, lint y tests verdes.
-- `test:unit`: 7 archivos / 16 tests.
+- `test:unit`: 7 archivos / 18 tests.
 - `test:e2e`: 15 tests (14 de UI + flujo autenticado). El flujo crea 2 usuarios efímeros por corrida, requiere "Confirm email" desactivado y deja usuarios huérfanos.
 - El build emite un warning conocido: Leaflet no es ESM.
 
 ## Architecture
 
 - Bootstrap `src/main.ts`; rutas lazy en `src/app/app.routes.ts`. Todo standalone.
-- `core/`: `SupabaseService`, `AuthService` (signals), `PublicacionesService` (signals + Realtime + caché localStorage), `MensajesService` (chat, no leídos, Realtime), `ModeracionService` (denuncias/bloqueos), `NotificacionesService` (push nativo FCM), `authGuard`, `UiService`, `models.ts`.
+- `core/`: `SupabaseService`, `AuthService` (signals), `PublicacionesService` (signals + Realtime + caché localStorage), `MensajesService` (chat, no leídos, Realtime), `ModeracionService` (denuncias/bloqueos), `NotificacionesService` (push nativo FCM), `TemaService` (claro/oscuro/sistema + `ion-palette-dark`), `authGuard`, `UiService`, `models.ts`.
 - `pages/`: inicio, mapa (Leaflet en `ionViewDidEnter`), publicar (crear/editar, foto comprimida, geocoding), detalle, chat, conversación, perfil, comunidad, servicios, intercambios, emergencia, login, bienvenida.
 - `shared/`: distancia/geolocalización (fallback Arequipa), `geocodificar` (Nominatim), `telefono`, `errores`, catálogo, contactos WhatsApp, conversaciones.
-- Tablas: `perfiles`, `publicaciones`, `recomendaciones`, `mensajes`, `denuncias`, `bloqueos`, `push_tokens`; RPC `telefono_de`; Storage bucket `fotos`; Edge Function `supabase/functions/aviso-push` + triggers `pg_net`.
+- Tablas: `perfiles`, `publicaciones`, `recomendaciones`, `mensajes`, `denuncias`, `bloqueos`, `push_tokens`; RPC `telefono_de` y `mi_telefono`; Storage bucket `fotos`; Edge Function `supabase/functions/aviso-push` + triggers `pg_net`.
 - Realtime: `publicaciones`, `recomendaciones`, `mensajes`. Canales por página se detienen al salir.
 - Despliegue: `netlify.toml` (build + SPA fallback) y `src/_redirects`. Nativo: `assets/logo.png` es la fuente de `@capacitor/assets`.
 - Push solo en nativo: `google-services.json` va en `android/app/`; el service account FCM vive en un secreto de Supabase, nunca en el repo.
@@ -45,4 +45,17 @@ KonectAll: Ionic 9 + Angular 22 standalone (Capacitor 8) para una red vecinal de
 - Presupuestos: estilos de componente warning 2 KB / error 4 KB.
 - `src/test-setup.ts` polyfills `window.matchMedia` para jsdom.
 - Las migraciones las ejecuta el usuario en el SQL Editor; no hay credenciales de service role/DDL en el repo.
+- UI: los textos visibles dicen “Localidad”; el campo/columna interna sigue siendo `barrio` (modelos, selects, metadata, RPC). No renombrar `barrio` en el código.
+- El perfil se guarda con `update().eq('id', user.id)`, nunca con `upsert`: `ON CONFLICT` requiere SELECT sobre `perfiles`, revocado por RLS (42501).
+- Colores de tipo: `TIPOS` usa `primary` (Ofrezco), `necesito` (color Ionic propio) y `tertiary` (Intercambio). `visualPublicacion` colorea por tipo y elige el icono por categoría. Los tokens `--tipo-*` están en `variables.scss` y `.ion-color-necesito` en `global.scss`.
+- El mapa usa hex equivalentes en `color()` (`mapa.page.ts`); si cambias la paleta de tipos, actualiza también esos hex. Los pines son `L.divIcon` con HTML inyectado y sus estilos `.pin-mapa*` viven en `src/global.scss` porque la encapsulación Angular no aplica.
+- Detalle: `.acciones` va centrado con `max-width: 560px` y botones de al menos 44px; no lo pegues a los bordes.
 - `pyproject.toml`, `uv.lock` y `src/konectall/` son un stub Python ajeno al app.
+
+## Trabajo reciente (2026-11-08)
+
+- Perfil: estado de edición (“Editando”, “Sin cambios”/“Cambios sin guardar”), botón “Guardar cambios” deshabilitado sin cambios y confirmación al descartar; UI “Localidad”.
+- Guardado de perfil con `update` + errores específicos + prellenado con `mi_telefono()`.
+- Colores por tipo en tarjetas/chips/detalle/mapa: Ofrezco azul, Necesito naranja, Intercambio verde azulado.
+- Detalle con acciones centradas y más grandes; mapa con pines con icono y marcador propio de persona.
+- Tema claro/oscuro/sistema y tab bar de 72px con Publicar central visible.
