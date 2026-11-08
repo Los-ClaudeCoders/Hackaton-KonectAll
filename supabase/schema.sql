@@ -360,6 +360,19 @@ $$;
 
 grant execute on function public.telefono_de(uuid) to anon, authenticated;
 
+-- Teléfono propio, para precargar el formulario de edición del perfil.
+create or replace function public.mi_telefono()
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select telefono from public.perfiles where id = auth.uid();
+$$;
+
+grant execute on function public.mi_telefono() to authenticated;
+
 -- ─────────────────────────────────────────────────────────────
 -- 9. Notificaciones push: pg_net + triggers
 -- ─────────────────────────────────────────────────────────────

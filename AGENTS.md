@@ -18,7 +18,7 @@ KonectAll: Ionic 9 + Angular 22 standalone (Capacitor 8) para una red vecinal de
 ## Baseline (verificado)
 
 - Build, lint y tests verdes.
-- `test:unit`: 7 archivos / 15 tests.
+- `test:unit`: 7 archivos / 16 tests.
 - `test:e2e`: 15 tests (14 de UI + flujo autenticado). El flujo crea 2 usuarios efímeros por corrida, requiere "Confirm email" desactivado y deja usuarios huérfanos.
 - El build emite un warning conocido: Leaflet no es ESM.
 

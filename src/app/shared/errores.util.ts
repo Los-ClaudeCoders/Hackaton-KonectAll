@@ -23,14 +23,30 @@ const TRADUCCIONES: Traduccion[] = [
   { patron: /signup is disabled/i, mensaje: 'El registro está deshabilitado' },
   { patron: /auth session missing|token has expired|invalid token/i, mensaje: 'El enlace expiró. Solicita uno nuevo.' },
   {
+    patron: /permission denied|insufficient privilege/i,
+    mensaje: 'Sin permisos para esta operación.',
+  },
+  {
     patron: /row-level security policy|violates row-level security/i,
-    mensaje: 'Límite alcanzado. Intenta de nuevo más tarde.',
+    mensaje: 'Sin permisos para esta acción o alcanzaste un límite.',
   },
   { patron: /duplicate key value/i, mensaje: 'Ya registraste esta acción' },
 ];
 
+/** Extrae el mensaje aunque el error no sea una instancia de Error. */
+function textoDe(error: unknown): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object') {
+    const mensaje = (error as { message?: unknown }).message;
+    if (typeof mensaje === 'string') return mensaje;
+    const detalle = (error as { details?: unknown }).details;
+    if (typeof detalle === 'string') return detalle;
+  }
+  return '';
+}
+
 export function mensajeError(error: unknown, porDefecto = 'Ocurrió un error'): string {
-  const texto = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  const texto = textoDe(error);
   for (const { patron, mensaje } of TRADUCCIONES) {
     if (patron.test(texto)) return mensaje;
   }

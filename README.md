@@ -24,19 +24,19 @@ Red vecinal para ofrecer, encontrar e intercambiar productos y servicios cerca d
 
 ## Tecnologías usadas
 
-| Área | Herramientas |
-|---|---|
-| Frontend | Angular 22.2.3, Ionic 9, TypeScript 6, standalone components, signals, SCSS |
-| Móvil | Capacitor 8.6 (`app`, `haptics`, `keyboard`, `status-bar`, `push-notifications`), `@capacitor/assets` |
-| Backend | Supabase: Postgres, Auth, RLS, Realtime, Storage, Edge Functions (Deno), `pg_net` |
-| Base de datos | SQL idempotente en `supabase/` (tablas, políticas, triggers, RPC, bucket) |
-| Mapa | Leaflet 1.9.4, tiles OpenStreetMap, geocoding Nominatim |
-| PWA | `@angular/service-worker` 22.2.3, `ngsw-config.json`, manifest e íconos |
-| Push | FCM HTTP v1 (OAuth con `jose`), Edge Function `aviso-push`, triggers de Postgres |
-| Pruebas | Vitest 5 + jsdom (unit), Playwright 1.64 (e2e) |
-| Calidad | ESLint 10 (Ionic config), Prettier 3, `angular-eslint`, typecheck de e2e |
-| Deploy | Netlify (`netlify.toml`, `_redirects`, HTTPS) |
-| CLI | Supabase CLI 3.0 (link, deploy de functions, secrets) |
+| Área          | Herramientas                                                                                          |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Frontend      | Angular 22.2.3, Ionic 9, TypeScript 6, standalone components, signals, SCSS                           |
+| Móvil         | Capacitor 8.6 (`app`, `haptics`, `keyboard`, `status-bar`, `push-notifications`), `@capacitor/assets` |
+| Backend       | Supabase: Postgres, Auth, RLS, Realtime, Storage, Edge Functions (Deno), `pg_net`                     |
+| Base de datos | SQL idempotente en `supabase/` (tablas, políticas, triggers, RPC, bucket)                             |
+| Mapa          | Leaflet 1.9.4, tiles OpenStreetMap, geocoding Nominatim                                               |
+| PWA           | `@angular/service-worker` 22.2.3, `ngsw-config.json`, manifest e íconos                               |
+| Push          | FCM HTTP v1 (OAuth con `jose`), Edge Function `aviso-push`, triggers de Postgres                      |
+| Pruebas       | Vitest 5 + jsdom (unit), Playwright 1.64 (e2e)                                                        |
+| Calidad       | ESLint 10 (Ionic config), Prettier 3, `angular-eslint`, typecheck de e2e                              |
+| Deploy        | Netlify (`netlify.toml`, `_redirects`, HTTPS)                                                         |
+| CLI           | Supabase CLI 3.0 (link, deploy de functions, secrets)                                                 |
 
 ## Diseño
 
@@ -62,17 +62,17 @@ La interfaz se rediseñó tomando como referencia el mockup original de “Cerca
 
 ## Modelo de datos (Supabase)
 
-| Tabla | Uso |
-|---|---|
-| `perfiles` | Nombre, barrio y teléfono. El teléfono **no** se expone en listados; se obtiene con el RPC `telefono_de`. |
-| `publicaciones` | Tipo, modo, categoría, título, descripción, dirección, foto, precio, urgente, coordenadas y estado. |
-| `recomendaciones` | Un “Visto Bueno” por publicación y vecino. |
-| `mensajes` | Chat por publicación: emisor, receptor, texto y `leido`. |
-| `denuncias` | Reportes con motivo (publicación o mensaje). |
-| `bloqueos` | Vecinos bloqueados por usuario. |
-| `push_tokens` | Tokens FCM por usuario y plataforma. |
+| Tabla             | Uso                                                                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `perfiles`        | Nombre, barrio y teléfono. El teléfono **no** se expone en listados; se obtiene con el RPC `telefono_de`. |
+| `publicaciones`   | Tipo, modo, categoría, título, descripción, dirección, foto, precio, urgente, coordenadas y estado.       |
+| `recomendaciones` | Un “Visto Bueno” por publicación y vecino.                                                                |
+| `mensajes`        | Chat por publicación: emisor, receptor, texto y `leido`.                                                  |
+| `denuncias`       | Reportes con motivo (publicación o mensaje).                                                              |
+| `bloqueos`        | Vecinos bloqueados por usuario.                                                                           |
+| `push_tokens`     | Tokens FCM por usuario y plataforma.                                                                      |
 
-Además: bucket público `fotos`, RLS en todas las tablas, Realtime en `publicaciones`, `recomendaciones` y `mensajes`, RPC `telefono_de(uuid)` y Edge Function `aviso-push` con triggers `pg_net`.
+Además: bucket público `fotos`, RLS en todas las tablas, Realtime en `publicaciones`, `recomendaciones` y `mensajes`, RPC `telefono_de(uuid)` (contacto) y `mi_telefono()` (propio), y Edge Function `aviso-push` con triggers `pg_net`.
 
 ## Puesta en marcha local
 
@@ -97,16 +97,16 @@ Las claves públicas de Supabase están en `src/environments/environment.ts` y `
 
 ## Comandos
 
-| Comando | Qué hace |
-|---|---|
-| `npm start` | Servidor de desarrollo |
-| `npm run build` | Build de producción en `www/` (incluye `ngsw.json`) |
-| `npm run lint` | ESLint + typecheck de e2e + Prettier |
-| `npm run lint:fix` | ESLint `--fix` + Prettier |
-| `npm run test:unit` | Vitest (specs de `src/`) |
-| `npm run test:unit:watch` | Vitest en modo watch |
-| `npm run test:e2e` | Playwright (auto-inicia el dev server) |
-| `npm test` | Unit + e2e |
+| Comando                   | Qué hace                                            |
+| ------------------------- | --------------------------------------------------- |
+| `npm start`               | Servidor de desarrollo                              |
+| `npm run build`           | Build de producción en `www/` (incluye `ngsw.json`) |
+| `npm run lint`            | ESLint + typecheck de e2e + Prettier                |
+| `npm run lint:fix`        | ESLint `--fix` + Prettier                           |
+| `npm run test:unit`       | Vitest (specs de `src/`)                            |
+| `npm run test:unit:watch` | Vitest en modo watch                                |
+| `npm run test:e2e`        | Playwright (auto-inicia el dev server)              |
+| `npm test`                | Unit + e2e                                          |
 
 Contra un sitio desplegado:
 
@@ -118,7 +118,7 @@ npx.cmd playwright test e2e/app.spec.ts
 ## Pruebas
 
 - **Unit:** 7 archivos / 15 tests (catálogo, comunidad, conversaciones, errores, teléfono, login y app).
-- **E2E:** 15 tests. `app.spec.ts` cubre bienvenida, mapa, búsqueda, rutas, detalle, privacidad y moderación; `flujo.spec.ts` registra dos vecinos y prueba publicar, recomendar, chatear, badge de no leídos, reportar, bloquear y eliminar.
+- **E2E:** 15 tests. `app.spec.ts` cubre bienvenida, mapa, búsqueda, rutas, detalle, privacidad y moderación; `flujo.spec.ts` registra dos vecinos y prueba editar perfil, publicar, recomendar, chatear, badge de no leídos, reportar, bloquear y eliminar.
 - El flujo autenticado crea **dos usuarios efímeros** por corrida (emails aleatorios) y requiere “Confirm email” desactivado. Los usuarios de Auth quedan en el proyecto; las publicaciones se eliminan al final.
 
 ## Despliegue web (Netlify)
@@ -199,15 +199,15 @@ El botón **Activar notificaciones** está en Mi perfil y solo aparece en la app
 
 ## Problemas conocidos y soluciones
 
-| Síntoma | Causa / solución |
-|---|---|
-| “Email logins are disabled” | Habilita el proveedor Email en Authentication → Providers → Email. |
-| La función push responde 503 | El secreto `FCM_SERVICE_ACCOUNT` debe ser el JSON del **service account**, no `google-services.json`. |
-| La función push responde 500 | Revisa los logs de la función; la versión actual devuelve el error en el JSON. |
-| No llega la notificación | Verifica permiso, fila en `push_tokens`, `google-services.json`, secreto y función desplegada. |
-| 404 al abrir una ruta directa | Revisa `netlify.toml`/`src/_redirects` (fallback SPA). |
-| “SDK location not found” al compilar Android | Abre `android/` en Android Studio una vez para que cree `local.properties`. |
-| Warning de Leaflet no ESM | Conocido; no afecta el build. |
+| Síntoma                                      | Causa / solución                                                                                      |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| “Email logins are disabled”                  | Habilita el proveedor Email en Authentication → Providers → Email.                                    |
+| La función push responde 503                 | El secreto `FCM_SERVICE_ACCOUNT` debe ser el JSON del **service account**, no `google-services.json`. |
+| La función push responde 500                 | Revisa los logs de la función; la versión actual devuelve el error en el JSON.                        |
+| No llega la notificación                     | Verifica permiso, fila en `push_tokens`, `google-services.json`, secreto y función desplegada.        |
+| 404 al abrir una ruta directa                | Revisa `netlify.toml`/`src/_redirects` (fallback SPA).                                                |
+| “SDK location not found” al compilar Android | Abre `android/` en Android Studio una vez para que cree `local.properties`.                           |
+| Warning de Leaflet no ESM                    | Conocido; no afecta el build.                                                                         |
 
 ## Estado de la demo
 

@@ -289,11 +289,16 @@ export class PerfilPage {
     return (this.auth.usuario()?.user_metadata?.['barrio'] as string | undefined) ?? null;
   }
 
-  iniciarEdicion(): void {
+  async iniciarEdicion(): Promise<void> {
     this.nombreEdicion.set(this.nombre());
     this.telefonoEdicion.set(this.telefono() ?? '');
     this.barrioEdicion.set(this.barrio() ?? '');
     this.editandoPerfil.set(true);
+
+    if (!this.telefono()) {
+      const { data } = await this.sb.client.rpc('mi_telefono');
+      if (typeof data === 'string' && data) this.telefonoEdicion.set(data);
+    }
   }
 
   cancelarEdicion(): void {
@@ -326,19 +331,35 @@ export class PerfilPage {
     try {
       const { error: perfilError } = await this.sb.client
         .from('perfiles')
-        .upsert({ id: user.id, nombre, telefono, barrio: barrio || null }, { onConflict: 'id' });
-      if (perfilError) throw perfilError;
+        .update({ nombre, telefono, barrio: barrio || null })
+        .eq('id', user.id);
+      if (perfilError) {
+        console.error('perfiles.update', perfilError);
+        await this.ui.aviso(mensajeError(perfilError, 'No se pudo guardar tu perfil'), 'danger');
+        return;
+      }
 
       const { data, error } = await this.sb.client.auth.updateUser({
         data: { nombre, telefono, barrio: barrio || null },
       });
-      if (error) throw error;
+      if (error) {
+        console.error('auth.updateUser', error);
+        await this.ui.aviso(mensajeError(error, 'No se pudo actualizar tu cuenta'), 'danger');
+        return;
+      }
       if (data.user) this.auth.usuario.set(data.user);
 
-      await this.pubs.cargar();
       this.editandoPerfil.set(false);
       await this.ui.aviso('Perfil actualizado', 'success');
+
+      try {
+        await this.pubs.cargar();
+      } catch (e) {
+        console.error('perfil.recargar', e);
+        await this.ui.aviso('Se guardó tu perfil, pero no se pudo refrescar la lista', 'warning');
+      }
     } catch (e) {
+      console.error('perfil', e);
       await this.ui.aviso(mensajeError(e, 'No se pudo actualizar el perfil'), 'danger');
     } finally {
       this.guardando.set(false);

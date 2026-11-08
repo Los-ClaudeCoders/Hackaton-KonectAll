@@ -15,7 +15,11 @@ describe('errores.util', () => {
 
   it('traduce el límite de las políticas RLS', () => {
     expect(mensajeError(new Error('new row violates row-level security policy'))).toBe(
-      'Límite alcanzado. Intenta de nuevo más tarde.',
+      'Sin permisos para esta acción o alcanzaste un límite.',
     );
+  });
+
+  it('lee el mensaje de objetos planos (no Error)', () => {
+    expect(mensajeError({ message: 'permission denied for table perfiles' })).toBe('Sin permisos para esta operación.');
   });
 });
