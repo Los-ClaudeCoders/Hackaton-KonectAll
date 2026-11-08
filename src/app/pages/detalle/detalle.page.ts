@@ -314,19 +314,27 @@ import { AvatarComponent } from '../../shared/ui/avatar.component';
       .pie {
         --background: var(--app-surface);
         border-top: 1px solid var(--app-border);
-        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+        padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
       }
       .acciones {
         display: grid;
-        gap: 8px;
+        gap: 10px;
         grid-template-columns: 1fr 1fr;
+        margin: 0 auto;
+        max-width: 560px;
       }
       .acciones ion-button {
-        font-size: 0.78rem;
+        font-size: 0.82rem;
         margin: 0;
+        min-height: 44px;
+      }
+      .acciones ion-icon {
+        font-size: 18px;
       }
       .acciones .principal {
+        font-size: 0.9rem;
         grid-column: 1 / -1;
+        min-height: 48px;
       }
     `,
   ],

@@ -20,6 +20,7 @@ import {
   chevronForwardOutline,
   constructOutline,
   locateOutline,
+  person,
   pricetagOutline,
   swapHorizontalOutline,
 } from 'ionicons/icons';
@@ -173,7 +174,7 @@ export class MapaPage implements OnDestroy {
 
   private mapa?: L.Map;
   private capa = L.layerGroup();
-  private yo?: L.CircleMarker;
+  private yo?: L.Marker;
 
   constructor() {
     addIcons({
@@ -182,6 +183,7 @@ export class MapaPage implements OnDestroy {
       chevronForwardOutline,
       constructOutline,
       locateOutline,
+      person,
       pricetagOutline,
       swapHorizontalOutline,
     });
@@ -238,14 +240,15 @@ export class MapaPage implements OnDestroy {
     if (!this.mapa) return;
     const pos = this.pub.posicion();
     this.yo?.remove();
-    this.yo = L.circleMarker([pos.lat, pos.lng], {
-      radius: 7,
-      color: '#ffffff',
-      weight: 3,
-      fillColor: '#1c5fd6',
-      fillOpacity: 1,
+    this.yo = L.marker([pos.lat, pos.lng], {
+      icon: L.divIcon({
+        className: 'pin-mapa pin-mapa-yo',
+        html: '<div class="pin-mapa-cuerpo"><ion-icon name="person"></ion-icon></div>',
+        iconSize: [38, 46],
+        iconAnchor: [19, 46],
+      }),
     })
-      .bindTooltip('Estás aquí', { direction: 'top' })
+      .bindTooltip('Estás aquí', { direction: 'top', offset: [0, -32] })
       .addTo(this.mapa);
     this.mapa.setView([pos.lat, pos.lng], 15);
   }
@@ -258,16 +261,17 @@ export class MapaPage implements OnDestroy {
     if (!this.mapa) return;
     this.capa.clearLayers();
     for (const p of lista) {
-      L.circleMarker([p.lat, p.lng], {
-        radius: 10,
-        color: '#ffffff',
-        weight: 2,
-        fillColor: this.color(p),
-        fillOpacity: 1,
+      L.marker([p.lat, p.lng], {
+        icon: L.divIcon({
+          className: 'pin-mapa',
+          html: `<div class="pin-mapa-cuerpo" style="--pin:${this.color(p)}"><ion-icon name="${this.visual(p).icono}"></ion-icon></div>`,
+          iconSize: [34, 42],
+          iconAnchor: [17, 41],
+        }),
       })
         .bindTooltip(p.direccion ? `${p.titulo} · ${p.direccion}` : p.titulo, {
           direction: 'top',
-          offset: [0, -8],
+          offset: [0, -32],
         })
         .on('click', () => this.zone.run(() => this.seleccionada.set(p)))
         .addTo(this.capa);
@@ -277,7 +281,7 @@ export class MapaPage implements OnDestroy {
   private color(p: Publicacion): string {
     if (p.modo === 'emergencia' || p.urgente) return '#dc2626';
     if (p.tipo === 'intercambio') return '#0d9488';
-    if (p.tipo === 'ofrezco') return '#059669';
-    return '#f59e0b';
+    if (p.tipo === 'necesito') return '#c2410c';
+    return '#1c5fd6';
   }
 }

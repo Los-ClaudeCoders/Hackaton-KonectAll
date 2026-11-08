@@ -36,6 +36,40 @@
 /* @import "@ionic/angular/css/palettes/dark.system.css"; */
 @import '@ionic/angular/css/palettes/dark.class.css';
 
+.pin-mapa {
+  background: transparent;
+  border: 0;
+}
+
+.pin-mapa-cuerpo {
+  align-items: center;
+  background: var(--pin, #1c5fd6);
+  border: 3px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+  box-sizing: border-box;
+  color: #ffffff;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  transform: rotate(-45deg);
+  width: 34px;
+}
+
+.pin-mapa-cuerpo ion-icon {
+  font-size: 18px;
+  transform: rotate(45deg);
+}
+
+.pin-mapa-yo .pin-mapa-cuerpo {
+  height: 38px;
+  width: 38px;
+}
+
+.pin-mapa-yo .pin-mapa-cuerpo ion-icon {
+  font-size: 20px;
+}
+
 .ion-color-necesito {
   --ion-color-base: var(--ion-color-necesito);
   --ion-color-base-rgb: var(--ion-color-necesito-rgb);
