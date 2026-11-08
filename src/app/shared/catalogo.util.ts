@@ -14,7 +14,7 @@ export interface OpcionCategoria {
 
 export const TIPOS: OpcionTipo[] = [
   { valor: 'ofrezco', etiqueta: 'Ofrezco', icono: 'hand-left-outline', color: 'primary' },
-  { valor: 'necesito', etiqueta: 'Necesito', icono: 'search-outline', color: 'success' },
+  { valor: 'necesito', etiqueta: 'Necesito', icono: 'search-outline', color: 'necesito' },
   {
     valor: 'intercambio',
     etiqueta: 'Intercambio',
@@ -74,28 +74,20 @@ export function visualPublicacion(publicacion: Pick<Publicacion, 'tipo' | 'modo'
   }
   if (publicacion.tipo === 'intercambio') {
     return {
-      color: 'var(--cat-intercambio)',
-      suave: 'var(--cat-intercambio-soft)',
+      color: 'var(--tipo-intercambio)',
+      suave: 'var(--tipo-intercambio-soft)',
       icono: 'swap-horizontal-outline',
     };
   }
-  if (publicacion.categoria === 'producto') {
-    return {
-      color: 'var(--ion-color-primary)',
-      suave: 'rgba(var(--ion-color-primary-rgb), 0.14)',
-      icono: 'bag-handle-outline',
-    };
-  }
-  if (publicacion.categoria === 'servicio') {
-    return {
-      color: 'var(--cat-servicio)',
-      suave: 'var(--cat-servicio-soft)',
-      icono: 'construct-outline',
-    };
-  }
-  return {
-    color: 'var(--cat-comunidad)',
-    suave: 'var(--cat-comunidad-soft)',
-    icono: 'pricetag-outline',
-  };
+  const color =
+    publicacion.tipo === 'necesito'
+      ? { color: 'var(--tipo-necesito)', suave: 'var(--tipo-necesito-soft)' }
+      : { color: 'var(--tipo-ofrezco)', suave: 'var(--tipo-ofrezco-soft)' };
+  const icono =
+    publicacion.categoria === 'producto'
+      ? 'bag-handle-outline'
+      : publicacion.categoria === 'servicio'
+        ? 'construct-outline'
+        : 'pricetag-outline';
+  return { ...color, icono };
 }

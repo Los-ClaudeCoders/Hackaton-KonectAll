@@ -272,16 +272,16 @@ const LIMITE_FOTO = 5 * 1024 * 1024;
         padding: 14px;
       }
       .tipo-ofrezco {
-        --tipo: var(--ion-color-primary);
-        --tipo-suave: rgba(var(--ion-color-primary-rgb), 0.12);
+        --tipo: var(--tipo-ofrezco);
+        --tipo-suave: var(--tipo-ofrezco-soft);
       }
       .tipo-necesito {
-        --tipo: var(--ion-color-success);
-        --tipo-suave: var(--cat-comunidad-soft);
+        --tipo: var(--tipo-necesito);
+        --tipo-suave: var(--tipo-necesito-soft);
       }
       .tipo-intercambio {
-        --tipo: var(--cat-intercambio);
-        --tipo-suave: var(--cat-intercambio-soft);
+        --tipo: var(--tipo-intercambio);
+        --tipo-suave: var(--tipo-intercambio-soft);
       }
       .tipo-icono {
         align-items: center;

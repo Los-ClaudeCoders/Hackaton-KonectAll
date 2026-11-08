@@ -36,6 +36,13 @@
   --ion-color-warning-shade: #d88b0a;
   --ion-color-warning-tint: #f6a823;
 
+  --ion-color-necesito: #c2410c;
+  --ion-color-necesito-rgb: 194, 65, 12;
+  --ion-color-necesito-contrast: #ffffff;
+  --ion-color-necesito-contrast-rgb: 255, 255, 255;
+  --ion-color-necesito-shade: #ab390b;
+  --ion-color-necesito-tint: #c85424;
+
   --ion-color-danger: #dc2626;
   --ion-color-danger-rgb: 220, 38, 38;
   --ion-color-danger-contrast: #ffffff;
@@ -85,6 +92,13 @@
   --cat-comunidad: #059669;
   --cat-comunidad-soft: #d1fae5;
 
+  --tipo-ofrezco: var(--ion-color-primary);
+  --tipo-ofrezco-soft: rgba(var(--ion-color-primary-rgb), 0.14);
+  --tipo-necesito: var(--ion-color-necesito);
+  --tipo-necesito-soft: #ffedd5;
+  --tipo-intercambio: var(--cat-intercambio);
+  --tipo-intercambio-soft: var(--cat-intercambio-soft);
+
   --ion-background-color: var(--app-bg);
   --ion-text-color: var(--app-text);
   --ion-card-background: var(--app-surface);
@@ -105,6 +119,13 @@
   --app-avatar-text: #cfe1ff;
   --cat-servicio-soft: #3a2c12;
   --cat-intercambio-soft: #0f3a37;
+  --tipo-necesito-soft: #3a2414;
+  --ion-color-necesito: #fb923c;
+  --ion-color-necesito-rgb: 251, 146, 60;
+  --ion-color-necesito-contrast: #1f2937;
+  --ion-color-necesito-contrast-rgb: 31, 41, 55;
+  --ion-color-necesito-shade: #dd8135;
+  --ion-color-necesito-tint: #fb9d50;
   --cat-emergencia-soft: #3b1717;
   --cat-comunidad-soft: #0f3227;
 

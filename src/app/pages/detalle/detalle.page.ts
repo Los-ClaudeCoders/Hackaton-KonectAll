@@ -40,6 +40,7 @@ import { PublicacionesService } from '../../core/publicaciones.service';
 import { SupabaseService } from '../../core/supabase.service';
 import { UiService } from '../../core/ui.service';
 import {
+  colorTipo,
   etiquetaCategoria,
   etiquetaEstado,
   etiquetaTipo,
@@ -116,7 +117,7 @@ import { AvatarComponent } from '../../shared/ui/avatar.component';
           }
 
           <div class="chips">
-            <ion-chip color="primary" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
+            <ion-chip [color]="colorTipo(p.tipo)" outline>{{ etiquetaTipo(p.tipo) }}</ion-chip>
             <ion-chip color="medium" outline>{{ etiquetaCategoria(p.categoria) }}</ion-chip>
             @if (p.modo === 'emergencia' || p.urgente) {
               <ion-chip color="danger" outline>Urgente</ion-chip>
@@ -341,6 +342,7 @@ export class DetallePage implements OnInit {
   private ui = inject(UiService);
   private router = inject(Router);
 
+  readonly colorTipo = colorTipo;
   readonly etiquetaTipo = etiquetaTipo;
   readonly etiquetaCategoria = etiquetaCategoria;
   readonly etiquetaEstado = etiquetaEstado;

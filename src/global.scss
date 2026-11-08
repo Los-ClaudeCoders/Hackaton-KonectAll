@@ -36,6 +36,15 @@
 /* @import "@ionic/angular/css/palettes/dark.system.css"; */
 @import '@ionic/angular/css/palettes/dark.class.css';
 
+.ion-color-necesito {
+  --ion-color-base: var(--ion-color-necesito);
+  --ion-color-base-rgb: var(--ion-color-necesito-rgb);
+  --ion-color-contrast: var(--ion-color-necesito-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-necesito-contrast-rgb);
+  --ion-color-shade: var(--ion-color-necesito-shade);
+  --ion-color-tint: var(--ion-color-necesito-tint);
+}
+
 /* Poppins (auto-almacenada; licencia OFL en assets/fonts/OFL.txt) */
 @font-face {
   font-family: 'Poppins';
