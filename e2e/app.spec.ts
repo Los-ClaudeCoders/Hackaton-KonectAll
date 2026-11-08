@@ -51,7 +51,7 @@ test('abre secciones desde el menú Más', async ({ page }) => {
 });
 
 test('sirve el manifest PWA', async ({ request }) => {
-  const respuesta = await request.get('/assets/manifest.webmanifest');
+  const respuesta = await request.get('/assets/manifest.json');
 
   expect(respuesta.ok()).toBeTruthy();
   const manifest = (await respuesta.json()) as { name: string };
